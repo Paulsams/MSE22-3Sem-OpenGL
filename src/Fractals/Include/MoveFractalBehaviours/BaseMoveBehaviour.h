@@ -7,6 +7,8 @@ namespace Fractals {
     struct BaseFractalRenderer;
 
     struct BaseMoveBehaviour {
+        virtual ~BaseMoveBehaviour() = default;
+
         virtual void update(FractalView &, BaseFractalRenderer &, double) { }
 
         virtual void mousePressEvent(FractalView &, BaseFractalRenderer &, QMouseEvent *) { }

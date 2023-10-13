@@ -6,6 +6,8 @@ namespace Fractals {
     class FractalView;
 
     struct BaseFractalRenderer {
+        virtual ~BaseFractalRenderer() = default;
+
         virtual void init(FractalView& view, QOpenGLShaderProgram* program) = 0;
         virtual void render(FractalView& view, QOpenGLShaderProgram* program, double deltaTime) = 0;
 
