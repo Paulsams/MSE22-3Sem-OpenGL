@@ -1,7 +1,7 @@
 #include <QApplication>
 #include <QSurfaceFormat>
 
-#include "TriangleWindow.h"
+#include "FractalView.h"
 
 namespace
 {
@@ -19,12 +19,10 @@ int main(int argc, char ** argv)
 	format.setVersion(g_gl_major_version, g_gl_minor_version);
 	format.setProfile(QSurfaceFormat::CoreProfile);
 
-	TriangleWindow window;
-	window.setFormat(format);
-	window.resize(640, 480);
+    Fractals::FractalView window;
+    window.setFormat(format);
+    window.resize(640, 480);
 	window.show();
-
-	window.setAnimated(true);
 
 	return app.exec();
 }
