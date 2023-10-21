@@ -4,7 +4,7 @@
 #include "Fractals/Include/DebugWindow.h"
 
 DebugWindow::DebugWindow(QWidget *parent)
-        : QWidget(parent), widgets_(), container_(new QVBoxLayout(this)) {
+        : QWidget(parent), container_(new QVBoxLayout(this)), widgets_() {
     setGeometry(10, 10, 300, 0);
     setStyleSheet("background-color: rgba(155, 155, 155, 200); font: 18px;");
     container_->setSizeConstraint(QLayout::SetMinimumSize);

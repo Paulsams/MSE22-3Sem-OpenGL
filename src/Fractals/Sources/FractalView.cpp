@@ -30,10 +30,6 @@ namespace Fractals {
               moveBehaviour_(std::move(moveBehaviour)), frameCounter_(*debugWindow_, 1000.0f) {}
 
     void FractalView::onInit() {
-//        auto *updater = new QTimer(this);
-//        connect(updater, &QTimer::timeout, this, [this]() { this->update(); });
-//        updater->start(1.0f / screen()->refreshRate());
-
         timer_.start();
 
         // Configure shaders
