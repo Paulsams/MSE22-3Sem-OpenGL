@@ -1,10 +1,10 @@
-set( TARGET_NAME FractalViewer )
+set(TARGET_NAME FractalViewer)
 
 include_directories(Include)
 include_directories(Sources)
 
 set(SRCS
-    Sources/main.cpp
+        Sources/main.cpp
         Sources/FractalView.cpp
         Include/FractalView.h
         Sources/FractalRenderers/Mandelbrot.cpp
@@ -21,7 +21,9 @@ set(SRCS
         Sources/DebugWindow.cpp
         Include/DebugWindow.h
 
-    shaders.qrc
+        shaders.qrc
+        Include/FrameCounter.h
+        Sources/FrameCounter.cpp
 )
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
@@ -29,7 +31,7 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 add_executable(${TARGET_NAME} ${SRCS})
 
 target_link_libraries(${TARGET_NAME}
-    PRIVATE
+        PRIVATE
         Qt5::Widgets
         FGL::Base
 )

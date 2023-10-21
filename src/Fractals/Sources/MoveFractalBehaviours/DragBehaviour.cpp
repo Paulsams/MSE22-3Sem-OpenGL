@@ -4,6 +4,9 @@
 
 namespace Fractals {
     void DragBehaviour::mousePressEvent(FractalView &, BaseFractalRenderer &, QMouseEvent *mouseEvent) {
+        if (mouseEvent->button() != Qt::LeftButton)
+            return;
+
         isDragged_ = true;
         lastMousePosition_ = QVector2D(mouseEvent->localPos());
     }
@@ -24,7 +27,10 @@ namespace Fractals {
         lastMousePosition_ = currentPosition;
     }
 
-    void DragBehaviour::mouseReleaseEvent(FractalView &, BaseFractalRenderer &, QMouseEvent *) {
+    void DragBehaviour::mouseReleaseEvent(FractalView &, BaseFractalRenderer &, QMouseEvent *mouseEvent) {
+        if (mouseEvent->button() != Qt::LeftButton)
+            return;
+
         isDragged_ = false;
     }
 }

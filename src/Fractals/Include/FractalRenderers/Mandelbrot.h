@@ -10,10 +10,11 @@ namespace Fractals {
     class Mandelbrot : public BaseFractalRenderer {
     public:
         explicit Mandelbrot(float aspect)
-            : aspect_(aspect) { }
+                : aspect_(aspect) {}
 
-        void init(FractalView& view, QOpenGLShaderProgram* program) override;
-        void render(FractalView& view, QOpenGLShaderProgram* program, double deltaTime) override;
+        void init(FractalView &view, QOpenGLShaderProgram *program) override;
+
+        void render(FractalView &view, QOpenGLShaderProgram *program, double deltaTime) override;
 
         QSizeF getAspectScreenToWorld(FractalView &view) override;
 

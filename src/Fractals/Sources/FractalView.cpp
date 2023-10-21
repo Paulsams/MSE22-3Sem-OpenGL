@@ -1,4 +1,5 @@
-#include "Fractals/Include/FractalView.h"
+#include "FractalView.h"
+#include "DebugWindow.h"
 
 #include <QMouseEvent>
 #include <QOpenGLFunctions>
@@ -23,17 +24,15 @@ namespace {
 }// namespace
 
 namespace Fractals {
-    FractalView::FractalView()
-        : debugWindow_(new DebugWindow(this)) { }
+    FractalView::FractalView(std::unique_ptr<BaseFractalRenderer> &&renderer,
+                             std::unique_ptr<BaseMoveBehaviour> &&moveBehaviour)
+            : debugWindow_(new DebugWindow(this)), renderer_(std::move(renderer)),
+              moveBehaviour_(std::move(moveBehaviour)), frameCounter_(*debugWindow_, 1000.0f) {}
 
-    FractalView::~FractalView() { }
-
-    void FractalView::initializeGL() {
-        initializeOpenGLFunctions();
-
-        auto *updater = new QTimer(this);
-        connect(updater, &QTimer::timeout, this, [this]() { this->update(); });
-        updater->start(1.0 / screen()->refreshRate());
+    void FractalView::onInit() {
+//        auto *updater = new QTimer(this);
+//        connect(updater, &QTimer::timeout, this, [this]() { this->update(); });
+//        updater->start(1.0f / screen()->refreshRate());
 
         timer_.start();
 
@@ -83,7 +82,7 @@ namespace Fractals {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    void FractalView::paintGL() {
+    void FractalView::onRender() {
         const qint64 currentTime = timer_.elapsed();
         const double deltaTime = static_cast<double>(currentTime - lastTimeRender_) / 1000.0;
         lastTimeRender_ = currentTime;
@@ -106,8 +105,9 @@ namespace Fractals {
         vao_.release();
         program_->release();
 
-        // Increment frame counter
-        ++frame_;
+        // Update frame counter
+        frameCounter_.update();
+        update();
     }
 
     void FractalView::mousePressEvent(QMouseEvent *mouseEvent) {
@@ -125,20 +125,33 @@ namespace Fractals {
     void FractalView::wheelEvent(QWheelEvent *wheelEvent) {
         constexpr float speedStep = 0.1f;
 
-        float step = wheelEvent->angleDelta().y();
-        step = (step > 0) ? 1.0f : ((step < 0) ? -1.0f : 0.0f);
-        // TODO: в идеале бы сделать зум в точку, а не в центр
-        renderer_->zoom = std::max(renderer_->zoom + step * speedStep * renderer_->zoom, 1.0f);
+        float directionStep = wheelEvent->angleDelta().y();
+        directionStep = (directionStep > 0) ? 1.0f : ((directionStep < 0) ? -1.0f : 0.0f);
+        float oldZoom = renderer_->zoom;
+        float step = directionStep * speedStep * renderer_->zoom;
+        renderer_->zoom = std::max(renderer_->zoom + step, 1.0f);
+
+        float coefficientStep = (renderer_->zoom - oldZoom) / step;
+        if (coefficientStep <= std::numeric_limits<float>::epsilon())
+            return;
+
+        auto sizeWindow = QPointF(width(), height());
+        QVector2D difference = QVector2D(wheelEvent->position() - sizeWindow / 2.0f);
+        difference.setY(-difference.y());
+
+        const QSizeF aspect = renderer_->getAspectScreenToWorld(*this);
+        auto shift = difference / QVector2D(width(), height()) /
+                     renderer_->zoom * QVector2D(aspect.width(), aspect.height()) *
+                     directionStep * speedStep * coefficientStep;
+        renderer_->viewPosition += shift;
     }
 
-    void FractalView::resizeGL(int, int) {
+    void FractalView::onResize(size_t width, size_t height) {
         // Configure viewport
-        const auto retinaScale = devicePixelRatio();
-        glViewport(0, 0, static_cast<GLint>(width() * retinaScale),
-                   static_cast<GLint>(height() * retinaScale));
+        glViewport(0, 0, static_cast<GLint>(width), static_cast<GLint>(height));
     }
 
-    void FractalView::closeEvent(QCloseEvent* event) {
+    void FractalView::closeEvent(QCloseEvent *event) {
         vao_.destroy();
         QOpenGLWidget::closeEvent(event);
     }

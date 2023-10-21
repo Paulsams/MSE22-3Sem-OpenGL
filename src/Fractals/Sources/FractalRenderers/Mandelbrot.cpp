@@ -4,23 +4,24 @@
 
 #include "FractalRenderers/Mandelbrot.h"
 #include "FractalView.h"
+#include "DebugWindow.h"
 
 namespace Fractals {
-    void Mandelbrot::init(FractalView& view, QOpenGLShaderProgram* program) {
+    void Mandelbrot::init(FractalView &view, QOpenGLShaderProgram *program) {
         matrixUniform_ = program->uniformLocation("matrix");
         zoomUniform_ = program->uniformLocation("zoom");
         viewPositionUniform_ = program->uniformLocation("viewPosition");
         maxIterationsUniform_ = program->uniformLocation("maxIterations");
 
-        auto iterCounter = view.getDebugContainer()->addSlider("Max Iterations",
-            maxIterations_, 50, 300);
+        auto iterCounter = view.getDebugContainer()->addSlider("Max Iterations", "Max Iterations",
+                                                               maxIterations_, 50, 300);
 
         QWidget::connect(iterCounter, &QSlider::valueChanged, &view, [this](int newValue) {
             maxIterations_ = newValue;
         });
     }
 
-    void Mandelbrot::render(FractalView& view, QOpenGLShaderProgram* program, double) {
+    void Mandelbrot::render(FractalView &view, QOpenGLShaderProgram *program, double) {
         const auto aspect = getAspectScreenToWorld(view);
         const auto halfAspect = aspect / 2.0f;
 

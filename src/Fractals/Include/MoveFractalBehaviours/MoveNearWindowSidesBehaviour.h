@@ -6,10 +6,11 @@ namespace Fractals {
     class MoveNearWindowSidesBehaviour : public BaseMoveBehaviour {
     public:
         explicit MoveNearWindowSidesBehaviour(float speed)
-            : speed_(speed) { }
+                : speed_(speed) {}
 
-        void mouseMoveEvent(FractalView& view, BaseFractalRenderer& renderer, QMouseEvent* mouseEvent) override;
-        void update(FractalView& view, BaseFractalRenderer& renderer, double deltaTime) override;
+        void mouseMoveEvent(FractalView &view, BaseFractalRenderer &renderer, QMouseEvent *mouseEvent) override;
+
+        void update(FractalView &view, BaseFractalRenderer &renderer, double deltaTime) override;
 
     private:
         bool isMoved_ = false;
