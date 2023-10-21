@@ -1,7 +1,7 @@
-#include <QLabel>
+#include "Fractals/Include/DebugWindow.h"
+
 #include <QLineEdit>
 #include <QRegExpValidator>
-#include "Fractals/Include/DebugWindow.h"
 
 DebugWindow::DebugWindow(QWidget *parent)
         : QWidget(parent), container_(new QVBoxLayout(this)), widgets_() {
@@ -23,7 +23,7 @@ QSlider *DebugWindow::addSlider(const std::string &key, const std::string &title
 
     auto numberEdit = new QLineEdit(std::to_string(startValue).c_str());
     numberEdit->setMaximumWidth(40);
-    auto *validator = new QIntValidator(min, max, this);
+    auto validator = new QIntValidator(min, max, this);
     numberEdit->setValidator(validator);
 
     QWidget::connect(numberEdit, &QLineEdit::textChanged, this, [slider](QString newValue) {

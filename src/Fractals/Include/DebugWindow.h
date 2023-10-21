@@ -5,7 +5,9 @@
 #include <QSlider>
 #include <QLabel>
 
-class DebugWindow : private QWidget {
+#include <unordered_map>
+
+class DebugWindow : public QWidget {
 public:
     explicit DebugWindow(QWidget *parent = nullptr);
 
