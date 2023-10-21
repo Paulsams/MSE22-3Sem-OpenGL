@@ -1,6 +1,8 @@
 #include "FrameCounter.h"
 #include "DebugWindow.h"
 
+#include <cmath>
+
 FrameCounter::FrameCounter(DebugWindow &debugWindow, size_t updateStepInMs)
         : updateStepInMs_(updateStepInMs), fpsCounter_(debugWindow.addReadonlyLabel("FPS", "FPS"))
     {
