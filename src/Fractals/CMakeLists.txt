@@ -20,10 +20,10 @@ set(SRCS
         Include/MoveFractalBehaviours/DragBehaviour.h
         Sources/DebugWindow.cpp
         Include/DebugWindow.h
-
-        shaders.qrc
         Include/FrameCounter.h
         Sources/FrameCounter.cpp
+
+        shaders.qrc
 )
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
@@ -31,7 +31,7 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 add_executable(${TARGET_NAME} ${SRCS})
 
 target_link_libraries(${TARGET_NAME}
-        PRIVATE
+    PRIVATE
         Qt5::Widgets
         FGL::Base
 )
