@@ -1,6 +1,8 @@
 set(BASE_SRCS
         GLWidget.cpp
         GLWidget.hpp
+        DebugWindow.cpp
+        DebugWindow.h
 )
 
 add_library(Base ${BASE_SRCS})

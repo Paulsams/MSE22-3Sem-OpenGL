@@ -25,4 +25,4 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 add_subdirectory(src/Base)
-add_subdirectory(src/Fractals)
+add_subdirectory("src/1-Fractals")
