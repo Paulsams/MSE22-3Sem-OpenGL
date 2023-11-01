@@ -3,6 +3,8 @@ set(BASE_SRCS
         GLWidget.hpp
         DebugWindow.cpp
         DebugWindow.h
+        FrameCounter.cpp
+        FrameCounter.h
 )
 
 add_library(Base ${BASE_SRCS})

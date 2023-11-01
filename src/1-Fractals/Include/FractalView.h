@@ -3,7 +3,7 @@
 #include "Base/GLWidget.hpp"
 #include "FractalRenderers/BaseFractalRenderer.h"
 #include "MoveFractalBehaviours/BaseMoveBehaviour.h"
-#include "FrameCounter.h"
+#include "Base/FrameCounter.h"
 
 #include <QMatrix4x4>
 #include <QOpenGLBuffer>
