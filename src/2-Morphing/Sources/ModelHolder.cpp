@@ -6,12 +6,14 @@
 ModelHolder::ModelHolder(const char *filename, QOpenGLFunctions &glFuncs, QOpenGLShaderProgram &program)
         : model_(loadModel(filename)), funcs_(glFuncs), program_(program) {}
 
-void ModelHolder::init() {
+void ModelHolder::init(GLint mvpUniform) {
+    mvpUniform_ = mvpUniform;
+
     bindModel();
 }
 
-void ModelHolder::draw() {
-    drawModel();
+void ModelHolder::draw(QMatrix4x4& mvp) {
+    drawModel(mvp);
 }
 
 std::unique_ptr<tinygltf::Model> ModelHolder::loadModel(const char *filename) {
@@ -91,35 +93,176 @@ void ModelHolder::bindMesh(tinygltf::Mesh &mesh) {
         const tinygltf::Buffer &buffer = model_->buffers[bufferView.buffer];
         std::cout << "bufferview.target " << bufferView.target << std::endl;
 
-        QOpenGLBuffer vbo{QOpenGLBuffer::Type::VertexBuffer};
-        vbo.create();
-        vbo.bind();
-        vbo.setUsagePattern(QOpenGLBuffer::StaticDraw);
-        // Как-нибудь заюзать bufferView.target мейби надо?
+        QOpenGLBuffer bo{
+                bufferView.target == GL_ELEMENT_ARRAY_BUFFER
+                ? QOpenGLBuffer::Type::IndexBuffer
+                : QOpenGLBuffer::Type::VertexBuffer};
+        bo.create();
+        bo.bind();
+        bo.setUsagePattern(QOpenGLBuffer::StaticDraw);
 
         std::cout << "buffer.data.size = " << buffer.data.size()
                   << ", bufferview.byteOffset = " << bufferView.byteOffset
                   << std::endl;
 
-        vbo.allocate(&buffer.data.at(0) + bufferView.byteOffset,
-                     static_cast<int>(bufferView.byteLength));
+        bo.allocate(&buffer.data.at(0) + bufferView.byteOffset,
+                    static_cast<int>(bufferView.byteLength));
 //        glBufferData(bufferView.target, bufferView.byteLength,
 //                     &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
 
-        vbo.release();
-        vbos_[i] = vbo;
+        bo.release();
+        bos_[i] = bo;
     }
 
     for (const auto &primitive: mesh.primitives) {
         tinygltf::Accessor indexAccessor = model_->accessors[primitive.indices];
 
+//        for (auto &attrib: primitive.attributes) {
+//            tinygltf::Accessor accessor = model_->accessors[attrib.second];
+//
+//            if (accessor.bufferView == -1)
+//                continue;
+//
+//            int byteStride =
+//                    accessor.ByteStride(model_->bufferViews[accessor.bufferView]);
+//
+//            QOpenGLBuffer &bo = bos_[accessor.bufferView];
+//            bo.bind();
+//
+//            int size = 1;
+//            if (accessor.type != TINYGLTF_TYPE_SCALAR) {
+//                size = accessor.type;
+//            }
+//
+//            int vaa = -1;
+//            if (attrib.first == "POSITION") vaa = 0;
+//            if (attrib.first == "NORMAL") vaa = 1;
+//            if (attrib.first == "TEXCOORD_0") vaa = 2;
+//            if (vaa > -1) {
+//                program_.bind();
+//
+//                program_.enableAttributeArray(vaa);
+//                program_.setAttributeBuffer(vaa, accessor.componentType,
+//                                            static_cast<int>(accessor.byteOffset),
+//                                            size, byteStride);
+//
+//                program_.release();
+//            } else {
+//                std::cout << "vaa missing: " << attrib.first << std::endl;
+//            }
+//
+//            bo.release();
+//        }
+//
+//        if (!model_->textures.empty()) {
+//            // fixme: Use material's baseColor
+//            tinygltf::Texture &tex = model_->textures[0];
+//
+//            if (tex.source > -1) {
+//
+//                GLuint texid;
+//                funcs_.glGenTextures(1, &texid);
+//
+//                tinygltf::Image &image = model_->images[tex.source];
+//
+//                funcs_.glBindTexture(GL_TEXTURE_2D, texid);
+//                funcs_.glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+//                funcs_.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//                funcs_.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//                funcs_.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+//                funcs_.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+//
+//                GLenum format = GL_RGBA;
+//
+//                if (image.component == 1) {
+//                    format = GL_RED;
+//                } else if (image.component == 2) {
+//                    format = GL_RG;
+//                } else if (image.component == 3) {
+//                    format = GL_RGB;
+//                } else {
+//                    // ???
+//                }
+//
+//                GLenum type = GL_UNSIGNED_BYTE;
+//                if (image.bits == 8) {
+//                    // ok
+//                } else if (image.bits == 16) {
+//                    type = GL_UNSIGNED_SHORT;
+//                } else {
+//                    // ???
+//                }
+//
+//                funcs_.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width, image.height, 0,
+//                                    format, type, &image.image.at(0));
+//            }
+//        }
+    }
+}
+
+void ModelHolder::drawModel(QMatrix4x4& mvp) {
+    vao_.bind();
+
+    const tinygltf::Scene &scene = model_->scenes[model_->defaultScene];
+    for (int node: scene.nodes)
+        drawModelNodes(model_->nodes[node], mvp);
+
+    vao_.release();
+}
+
+void ModelHolder::drawModelNodes(tinygltf::Node &node, QMatrix4x4 mvp) {
+    QMatrix4x4 offsetMatrix;
+    if (node.matrix.size() == 16) {
+        // Use `matrix' attribute
+        offsetMatrix = QMatrix4x4(node.matrix[0], node.matrix[1], node.matrix[2], node.matrix[3],
+                                  node.matrix[4], node.matrix[5], node.matrix[6], node.matrix[7],
+                                  node.matrix[8], node.matrix[9], node.matrix[10], node.matrix[11],
+                                  node.matrix[12], node.matrix[13], node.matrix[14], node.matrix[15]);
+    } else {
+        offsetMatrix.setToIdentity();
+
+        // Assume Trans x Rotate x Scale order
+        if (node.translation.size() == 3) {
+            offsetMatrix.translate(node.translation[0], node.translation[1],
+                                   node.translation[2]);
+        }
+
+        if (node.rotation.size() == 4) {
+            offsetMatrix.rotate(QQuaternion(node.rotation[0], node.rotation[1], node.rotation[2], node.rotation[3]));
+        }
+
+        if (node.scale.size() == 3) {
+            offsetMatrix.scale(node.scale[0], node.scale[1], node.scale[2]);
+        }
+    }
+
+    mvp *= offsetMatrix;
+
+    if ((node.mesh >= 0) && (node.mesh < model_->meshes.size()))
+        drawMesh(model_->meshes[node.mesh], mvp);
+
+    for (int i : node.children)
+        drawModelNodes(model_->nodes[i], mvp);
+}
+
+void ModelHolder::drawMesh(tinygltf::Mesh &mesh, QMatrix4x4 &mvp) {
+    for (const auto &primitive: mesh.primitives) {
+        tinygltf::Accessor indexAccessor = model_->accessors[primitive.indices];
+
+        if (indexAccessor.bufferView == -1)
+            continue;
+
         for (auto &attrib: primitive.attributes) {
             tinygltf::Accessor accessor = model_->accessors[attrib.second];
+
+            if (accessor.bufferView == -1)
+                continue;
+
             int byteStride =
                     accessor.ByteStride(model_->bufferViews[accessor.bufferView]);
 
-            QOpenGLBuffer& vbo = vbos_[accessor.bufferView];
-            vbo.bind();
+            QOpenGLBuffer &bo = bos_[accessor.bufferView];
+            bo.bind();
 
             int size = 1;
             if (accessor.type != TINYGLTF_TYPE_SCALAR) {
@@ -131,19 +274,15 @@ void ModelHolder::bindMesh(tinygltf::Mesh &mesh) {
             if (attrib.first == "NORMAL") vaa = 1;
             if (attrib.first == "TEXCOORD_0") vaa = 2;
             if (vaa > -1) {
-                program_.bind();
-
                 program_.enableAttributeArray(vaa);
                 program_.setAttributeBuffer(vaa, accessor.componentType,
                                             static_cast<int>(accessor.byteOffset),
                                             size, byteStride);
-
-                program_.release();
             } else {
                 std::cout << "vaa missing: " << attrib.first << std::endl;
             }
 
-            vbo.release();
+            bo.release();
         }
 
         if (!model_->textures.empty()) {
@@ -189,38 +328,34 @@ void ModelHolder::bindMesh(tinygltf::Mesh &mesh) {
                                     format, type, &image.image.at(0));
             }
         }
-    }
-}
 
-void ModelHolder::drawModel() {
-    vao_.bind();
+        QOpenGLBuffer &bo = bos_.at(indexAccessor.bufferView);
+        bo.bind();
 
-    const tinygltf::Scene &scene = model_->scenes[model_->defaultScene];
-    for (int node: scene.nodes)
-        drawModelNodes(model_->nodes[node]);
-
-    vao_.release();
-}
-
-void ModelHolder::drawModelNodes(tinygltf::Node &node) {
-    if ((node.mesh >= 0) && (node.mesh < model_->meshes.size()))
-        drawMesh(model_->meshes[node.mesh]);
-
-    for (int i: node.children)
-        drawModelNodes(model_->nodes[i]);
-}
-
-void ModelHolder::drawMesh(tinygltf::Mesh &mesh) {
-    for (const auto& primitive : mesh.primitives) {
-        tinygltf::Accessor indexAccessor = model_->accessors[primitive.indices];
-
-        QOpenGLBuffer& vbo = vbos_.at(indexAccessor.bufferView);
-        vbo.bind();
+        // Update uniform value
+        program_.setUniformValue(mvpUniform_, mvp);
 
         funcs_.glDrawElements(primitive.mode, static_cast<GLsizei>(indexAccessor.count),
                               indexAccessor.componentType,
                               BUFFER_OFFSET(indexAccessor.byteOffset));
 
-        vbo.release();
+        for (auto &attrib: primitive.attributes) {
+            tinygltf::Accessor accessor = model_->accessors[attrib.second];
+
+            if (accessor.bufferView == -1)
+                continue;
+
+            int vaa = -1;
+            if (attrib.first == "POSITION") vaa = 0;
+            if (attrib.first == "NORMAL") vaa = 1;
+            if (attrib.first == "TEXCOORD_0") vaa = 2;
+            if (vaa > -1) {
+                program_.disableAttributeArray(vaa);
+            } else {
+                std::cout << "vaa missing: " << attrib.first << std::endl;
+            }
+        }
+
+        bo.release();
     }
 }

@@ -5,6 +5,8 @@ set(BASE_SRCS
         DebugWindow.h
         FrameCounter.cpp
         FrameCounter.h
+        Time.cpp
+        Time.h
 )
 
 add_library(Base ${BASE_SRCS})

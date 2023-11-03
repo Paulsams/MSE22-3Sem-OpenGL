@@ -8,9 +8,9 @@ class ModelHolder {
 public:
     explicit ModelHolder(const char *filename, QOpenGLFunctions &glFuncs, QOpenGLShaderProgram &program);
 
-    void init();
+    void init(GLint mvpUniform);
 
-    void draw();
+    void draw(QMatrix4x4& mvp);
 
 private:
     static std::unique_ptr<tinygltf::Model> loadModel(const char *filename);
@@ -21,19 +21,18 @@ private:
 
     void bindModel();
 
-    void drawModelNodes(tinygltf::Node &node);
+    void drawModelNodes(tinygltf::Node &node, QMatrix4x4 mvp);
 
-    void drawModel();
+    void drawModel(QMatrix4x4& mvp);
 
-    void drawMesh(tinygltf::Mesh &mesh);
+    void drawMesh(tinygltf::Mesh &mesh, QMatrix4x4 &mvp);
 
-//    QOpenGLBuffer vbo_{QOpenGLBuffer::Type::VertexBuffer};
-//    QOpenGLBuffer ibo_{QOpenGLBuffer::Type::IndexBuffer};
     QOpenGLVertexArrayObject vao_;
 
-    std::map<size_t, QOpenGLBuffer> vbos_;
+    std::map<size_t, QOpenGLBuffer> bos_;
 
     std::unique_ptr<tinygltf::Model> model_;
     QOpenGLFunctions &funcs_;
     QOpenGLShaderProgram &program_;
+    GLint mvpUniform_ = -1;
 };

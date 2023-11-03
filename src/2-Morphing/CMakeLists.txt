@@ -7,9 +7,14 @@ set(SRCS
     Sources/main.cpp
     Sources/MorphingView.cpp
     Sources/ModelHolder.cpp
+    Sources/ModelHolderNew.cpp
+    Sources/Camera.cpp
+    Sources/CameraView.cpp
 
     Include/MorphingView.h
     Include/ModelHolder.h
+    Include/Camera.h
+    Include/CameraView.h
 
     Shaders/diffuse.frag
     Shaders/diffuse.vert

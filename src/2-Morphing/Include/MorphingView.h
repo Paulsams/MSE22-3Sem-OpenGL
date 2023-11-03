@@ -3,14 +3,16 @@
 #include "Base/GLWidget.hpp"
 #include "Base/DebugWindow.h"
 #include "Base/FrameCounter.h"
+#include "Base/Time.h"
+
 #include "tiny_gltf.h"
 #include "ModelHolder.h"
+#include "CameraView.h"
 
 #include <QElapsedTimer>
 #include <QMatrix4x4>
 #include <QOpenGLBuffer>
 #include <QOpenGLShaderProgram>
-#include <QOpenGLTexture>
 #include <QOpenGLVertexArrayObject>
 
 #include <functional>
@@ -32,8 +34,6 @@ private:
     DebugWindow *debugWindow_;
     FrameCounter frameCounter_;
 
-	GLint mvpUniform_ = -1;
-
 	QMatrix4x4 model_;
 	QMatrix4x4 view_;
 	QMatrix4x4 projection_;
@@ -41,6 +41,8 @@ private:
 	std::unique_ptr<QOpenGLTexture> texture_ = nullptr;
 	std::unique_ptr<QOpenGLShaderProgram> program_;
     ModelHolder modelHolder_;
+    CameraView cameraView_;
+    Time time_{};
 
 	bool animated_ = true;
 };

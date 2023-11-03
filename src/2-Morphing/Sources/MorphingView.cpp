@@ -3,6 +3,7 @@
 #include <QLabel>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
+#include <QApplication>
 
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -13,7 +14,9 @@
 MorphingView::MorphingView() noexcept
         : debugWindow_(new DebugWindow(this)), frameCounter_(*debugWindow_, 1000.0f),
           program_(std::make_unique<QOpenGLShaderProgram>(this)),
-          modelHolder_("../Models/Cube.glb", *this, *program_) {}
+          modelHolder_("../Models/chess.glb", *this, *program_),
+          cameraView_(Camera{0.0f}, this) {
+}
 
 MorphingView::~MorphingView() {
     {
@@ -38,12 +41,10 @@ void MorphingView::onInit() {
     // Bind attributes
     program_->bind();
 
-    mvpUniform_ = program_->uniformLocation("mvp");
+    modelHolder_.init(program_->uniformLocation("mvp"));
 
     // Release all
     program_->release();
-
-    modelHolder_.init();
 
     // Еnable depth test and face culling
     glEnable(GL_DEPTH_TEST);
@@ -54,30 +55,30 @@ void MorphingView::onInit() {
 }
 
 void MorphingView::onRender() {
+    const double speedCamera = 10.0f;
+
+    time_.update();
+
     // Clear buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Calculate MVP matrix
     model_.setToIdentity();
-    model_.translate(0, 0, -2);
-    view_.setToIdentity();
-    const auto mvp = projection_ * view_ * model_;
+    model_.translate(0, 0, -10);
+    model_.scale(0.1f);
+
+    Camera& camera = cameraView_.getCamera();
+    camera.move(cameraView_.getDirectionMoveCamera() * static_cast<float>(speedCamera * time_.getDeltaTime()));
+
+    auto mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * model_;
 
     // Bind VAO and shader program
     program_->bind();
 
-    // Update uniform value
-    program_->setUniformValue(mvpUniform_, mvp);
-
-    // Activate texture unit and bind texture
-    glActiveTexture(GL_TEXTURE0);
-    texture_->bind();
-
     // Try Draw
-    modelHolder_.draw();
+    modelHolder_.draw(mvp);
 
     // Release VAO and shader program
-    texture_->release();
     program_->release();
 
     frameCounter_.update();
@@ -92,11 +93,5 @@ void MorphingView::onResize(const size_t width, const size_t height) {
     // Configure viewport
     glViewport(0, 0, static_cast<GLint>(width), static_cast<GLint>(height));
 
-    // Configure matrix
-    const auto aspect = static_cast<float>(width) / static_cast<float>(height);
-    const auto zNear = 0.1f;
-    const auto zFar = 100.0f;
-    const auto fov = 60.0f;
-    projection_.setToIdentity();
-    projection_.perspective(fov, aspect, zNear, zFar);
+    cameraView_.getCamera().setAspect(static_cast<float>(width) / static_cast<float>(height));
 }
