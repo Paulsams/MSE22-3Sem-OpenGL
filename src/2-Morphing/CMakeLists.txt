@@ -21,6 +21,14 @@ set(SRCS
     Textures/voronoi.png
 
     resources.qrc
+        Sources/Renderer.cpp
+        Include/Renderer.h
+        Sources/LoaderModel.cpp
+        Include/LoaderModel.h
+        Sources/SceneNode.cpp
+        Include/SceneNode.h
+        Sources/LoadModelIterator.cpp
+        Include/LoadModelIterator.h
 )
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)

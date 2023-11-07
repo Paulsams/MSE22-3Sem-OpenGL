@@ -3,6 +3,7 @@
 Camera::Camera(float aspect, float fov, float zNear, float zFar)
         : aspect_(aspect), fov_(fov), zNear_(zNear), zFar_(zFar) {
     updateProjectionMatrix();
+    updateViewMatrix();
 }
 
 void Camera::setAspect(float aspect) {
@@ -24,18 +25,8 @@ void Camera::move(QVector3D offset) {
     if (offset == QVector3D{})
         return;
 
-    QMatrix4x4 offsetMatrix;
-    offsetMatrix.translate(offset);
-
-    QMatrix4x4 rotationMatrix;
-    rotationMatrix.rotate(rotation_);
-    rotationMatrix = rotationMatrix.transposed();
-
-    QMatrix4x4 positionMatrix;
-    positionMatrix.translate(position_);
-    auto matrix = positionMatrix - offsetMatrix * rotationMatrix;
-
-    setPosition(matrix.column(3).toVector3D());
+    auto rotatedOffset = rotation_ * offset;
+    setPosition(position_ - rotatedOffset);
 }
 
 void Camera::rotate(QQuaternion offset) {
@@ -50,10 +41,7 @@ void Camera::updateProjectionMatrix() {
 
 void Camera::updateViewMatrix() {
     view_.setToIdentity();
-    QMatrix4x4 translateMatrix;
-    translateMatrix.translate(position_);
-
-    QMatrix4x4 rotationMatrix(rotation_.toRotationMatrix());
-
-    view_ = rotationMatrix * translateMatrix;
+    QVector3D targetForward = rotation_ * QVector3D(0.0f, 0.0f, -1.0f);
+    QVector3D targetUp = rotation_ * QVector3D(0.0f, 1.0f, 0.0f);
+    view_.lookAt(position_, position_ + targetForward, targetUp);
 }

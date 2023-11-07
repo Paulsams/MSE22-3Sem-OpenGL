@@ -14,8 +14,8 @@
 MorphingView::MorphingView() noexcept
         : debugWindow_(new DebugWindow(this)), frameCounter_(*debugWindow_, 1000.0f),
           program_(std::make_unique<QOpenGLShaderProgram>(this)),
-          modelHolder_("../Models/chess.glb", *this, *program_),
-          cameraView_(Camera{0.0f}, this) {
+          modelHolder_("../Models/Cube.glb", *this, *program_),
+          cameraView_(Camera{0.0f, 60.0f, 0.1f, 1000.0f}, this) {
 }
 
 MorphingView::~MorphingView() {
@@ -65,18 +65,25 @@ void MorphingView::onRender() {
     // Calculate MVP matrix
     model_.setToIdentity();
     model_.translate(0, 0, -10);
-    model_.scale(0.1f);
+    model_.scale(10.0f);
 
     Camera& camera = cameraView_.getCamera();
     camera.move(cameraView_.getDirectionMoveCamera() * static_cast<float>(speedCamera * time_.getDeltaTime()));
 
-    auto mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * model_;
+    auto vp = camera.getProjectionMatrix() * camera.getViewMatrix();
 
     // Bind VAO and shader program
     program_->bind();
 
+    program_->setUniformValue("ambient_strength", 0.1f);
+    program_->setUniformValue("light_color", 1.0f, 1.0f, 1.0f);
+    program_->setUniformValue("light_position", 0.0f, 0.0f, 10.0f);
+    program_->setUniformValue("view_position", camera.getPosition());
+    program_->setUniformValue("specular_strength", 0.5f);
+    program_->setUniformValue("power_specular", 128);
+
     // Try Draw
-    modelHolder_.draw(mvp);
+    modelHolder_.draw(model_, vp);
 
     // Release VAO and shader program
     program_->release();

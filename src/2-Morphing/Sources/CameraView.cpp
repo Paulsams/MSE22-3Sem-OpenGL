@@ -61,8 +61,8 @@ bool CameraView::eventFilter(QObject *obj, QEvent *event) {
 
             deltaMouse *= sensitivity;
             QQuaternion offsetRotate = QQuaternion::fromEulerAngles(
-                    deltaMouse.y(),
-                    deltaMouse.x(),
+                    -deltaMouse.y(),
+                    -deltaMouse.x(),
                     0.0f);
             camera_.rotate(offsetRotate);
 

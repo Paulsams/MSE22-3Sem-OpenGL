@@ -42,7 +42,7 @@
 //    const tinygltf::Scene &scene = model_->scenes[model_->defaultScene];
 //    for (int node: scene.nodes) {
 //        assert((node >= 0) && (node < model_->nodes.size()));
-//        bindModelNodes(model_->nodes[node]);
+//        initBufferForModelNodes(model_->nodes[node]);
 //    }
 //
 ////    glBindVertexArray(0);
@@ -61,18 +61,18 @@
 //    vao_.release();
 //}
 //
-//void ModelHolder::bindModelNodes(tinygltf::Node &node) {
+//void ModelHolder::initBufferForModelNodes(tinygltf::Node &node) {
 //    if ((node.mesh >= 0) && (node.mesh < model_->meshes.size())) {
-//        bindMesh(model_->meshes[node.mesh]);
+//        initBufferForMesh(model_->meshes[node.mesh]);
 //    }
 //
 //    for (int i: node.children) {
 //        assert((i >= 0) && (i < model_->nodes.size()));
-//        bindModelNodes(model_->nodes[i]);
+//        initBufferForModelNodes(model_->nodes[i]);
 //    }
 //}
 //
-//void ModelHolder::bindMesh(tinygltf::Mesh &mesh) {
+//void ModelHolder::initBufferForMesh(tinygltf::Mesh &mesh) {
 //    {
 //        for (size_t i = 0; i < model_->bufferViews.size(); i++) {
 //            const tinygltf::BufferView &bufferView = model_->bufferViews[i];

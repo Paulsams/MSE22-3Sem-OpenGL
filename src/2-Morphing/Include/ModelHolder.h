@@ -10,22 +10,18 @@ public:
 
     void init(GLint mvpUniform);
 
-    void draw(QMatrix4x4& mvp);
+    void draw(const QMatrix4x4 &model, const QMatrix4x4 &vp);
 
 private:
     static std::unique_ptr<tinygltf::Model> loadModel(const char *filename);
 
+    void bindModel();
+    void bindModelNodes(tinygltf::Node &node);
     void bindMesh(tinygltf::Mesh &mesh);
 
-    void bindModelNodes(tinygltf::Node &node);
-
-    void bindModel();
-
-    void drawModelNodes(tinygltf::Node &node, QMatrix4x4 mvp);
-
-    void drawModel(QMatrix4x4& mvp);
-
-    void drawMesh(tinygltf::Mesh &mesh, QMatrix4x4 &mvp);
+    void drawModel(const QMatrix4x4 &model, const QMatrix4x4 &vp);
+    void drawModelNodes(tinygltf::Node &node, QMatrix4x4 model, const QMatrix4x4 &vp);
+    void drawMesh(tinygltf::Mesh &mesh, QMatrix4x4 model, const QMatrix4x4 &vp);
 
     QOpenGLVertexArrayObject vao_;
 
