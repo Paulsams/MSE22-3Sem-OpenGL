@@ -1,11 +1,11 @@
 #pragma once
 
-#include <QOpenGLFunctions>
+#include <QOpenGLExtraFunctions>
 #include <QOpenGLWidget>
 
 namespace fgl {
 
-    class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions {
+    class GLWidget : public QOpenGLWidget, protected QOpenGLExtraFunctions {
     Q_OBJECT
 
     public:

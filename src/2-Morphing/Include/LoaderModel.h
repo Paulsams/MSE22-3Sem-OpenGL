@@ -6,8 +6,6 @@
 
 class SceneNode;
 
-class Temp;
-
 class LoaderModel {
 public:
     static std::shared_ptr<SceneNode> load(const char *filename, QOpenGLFunctions &glFuncs,

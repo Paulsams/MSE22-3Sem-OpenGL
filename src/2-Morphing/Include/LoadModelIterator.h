@@ -28,5 +28,5 @@ private:
     QOpenGLFunctions &funcs_;
     const std::shared_ptr<QOpenGLShaderProgram> &program_;
     tinygltf::Model &model_;
-    std::unordered_map<int, tinygltf::Buffer> buffers_;
+    std::unordered_map<int, tinygltf::BufferView> bufferViews_;
 };

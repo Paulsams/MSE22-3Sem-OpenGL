@@ -1,7 +1,8 @@
 #include <QApplication>
 #include <QSurfaceFormat>
 
-#include "2-Morphing/Include/MorphingView.h"
+#include "MorphingView.h"
+#include "InputHandler.h"
 
 namespace
 {
@@ -9,6 +10,8 @@ constexpr auto g_sampels = 16;
 constexpr auto g_gl_major_version = 3;
 constexpr auto g_gl_minor_version = 3;
 }// namespace
+
+InputHandler *InputHandler::_instance = nullptr;
 
 int main(int argc, char ** argv)
 {
@@ -23,9 +26,11 @@ int main(int argc, char ** argv)
 	format.setProfile(QSurfaceFormat::CoreProfile);
 	QSurfaceFormat::setDefaultFormat(format);
 
+    auto inputHandler = InputHandler::createInstance();
+
 	// Now create window.
 	MorphingView window;
-	window.resize(640, 480);
+	window.resize(1280, 720);
 	window.show();
 
 	return app.exec();

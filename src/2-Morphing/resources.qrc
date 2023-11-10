@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
-        <file>Models/chess.glb</file>
+        <file>Models/Chess.glb</file>
+        <file>Models/Sphere.glb</file>
     </qresource>
     <qresource prefix="/">
         <file>Textures/voronoi.png</file>

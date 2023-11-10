@@ -3,16 +3,15 @@ set(TARGET_NAME 2-Morphing)
 include_directories(Include)
 include_directories(Sources)
 
+file(INSTALL Models DESTINATION ./)
+
 set(SRCS
     Sources/main.cpp
     Sources/MorphingView.cpp
-    Sources/ModelHolder.cpp
-    Sources/ModelHolderNew.cpp
     Sources/Camera.cpp
     Sources/CameraView.cpp
 
     Include/MorphingView.h
-    Include/ModelHolder.h
     Include/Camera.h
     Include/CameraView.h
 
@@ -29,6 +28,17 @@ set(SRCS
         Include/SceneNode.h
         Sources/LoadModelIterator.cpp
         Include/LoadModelIterator.h
+        Sources/Scene.cpp
+        Include/Scene.h
+        Sources/Transform.cpp
+        Include/Transform.h
+        Sources/MoverOnArrows.cpp
+        Include/MoverOnArrows.h
+        Include/BaseComponent.h
+        Sources/InputHandler.cpp
+        Include/InputHandler.h
+        Sources/OpenGLUniformBuffer.cpp
+        Sources/OpenGLUniformBuffer.h
 )
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
@@ -41,3 +51,5 @@ target_link_libraries(${TARGET_NAME}
         FGL::Base
         thirdparty::tinygltf
 )
+
+#add_custom_target(Models ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${. Input_DIR} ${OUTPUT_DIR}).

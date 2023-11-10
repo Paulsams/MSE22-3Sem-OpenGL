@@ -1,20 +1,37 @@
 #include "2-Morphing/Include/CameraView.h"
+#include "InputHandler.h"
 #include <QKeyEvent>
 #include <QApplication>
 
 CameraView::CameraView(Camera camera, QWidget *parent)
         : QWidget(parent), camera_(camera) {
     QApplication::instance()->installEventFilter(this);
-    QWidget::setFocus();
     QWidget::setMouseTracking(true);
+
+    connect(&InputHandler::getInstance(), &InputHandler::keyPressed,
+            this, &CameraView::onKeyPressed);
+    connect(&InputHandler::getInstance(), &InputHandler::keyReleased,
+            this, &CameraView::onKeyRelease);
 }
 
-void CameraView::keyPressEvent(QKeyEvent *keyEvent) {
-    directionMoveCamera_ += getMoveDirectionFromInput(keyEvent->key());
+void CameraView::onKeyPressed(int keyCode) {
+    directionMoveCamera_ += getMoveDirectionFromInput(keyCode);
+
+    switch (keyCode) {
+        case Qt::Key_Shift:
+            _fastSpeedModeKeyPress = true;
+            break;
+    }
 }
 
-void CameraView::keyReleaseEvent(QKeyEvent *keyEvent) {
-    directionMoveCamera_ -= getMoveDirectionFromInput(keyEvent->key());
+void CameraView::onKeyRelease(int keyCode) {
+    directionMoveCamera_ -= getMoveDirectionFromInput(keyCode);
+
+    switch (keyCode) {
+        case Qt::Key_Shift:
+            _fastSpeedModeKeyPress = false;
+            break;
+    }
 }
 
 QVector3D CameraView::getMoveDirectionFromInput(int keyCode) {
@@ -60,11 +77,7 @@ bool CameraView::eventFilter(QObject *obj, QEvent *event) {
             lastMousePosition_ = mouseEvent->localPos();
 
             deltaMouse *= sensitivity;
-            QQuaternion offsetRotate = QQuaternion::fromEulerAngles(
-                    -deltaMouse.y(),
-                    -deltaMouse.x(),
-                    0.0f);
-            camera_.rotate(offsetRotate);
+            camera_.rotate(deltaMouse.x(), deltaMouse.y());
 
             return false;
         }

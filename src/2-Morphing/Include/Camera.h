@@ -22,7 +22,7 @@ public:
 
     void move(QVector3D offset);
 
-    void rotate(QQuaternion offset);
+    void rotate(float yaw, float pitch);
 
 private:
     void updateProjectionMatrix();
@@ -34,6 +34,9 @@ private:
 
     QQuaternion rotation_;
     QVector3D position_;
+
+    float yaw_ = 0.0f;
+    float pitch_ = 0.0f;
 
     float aspect_;
     float fov_;

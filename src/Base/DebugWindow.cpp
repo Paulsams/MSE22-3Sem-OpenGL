@@ -2,16 +2,18 @@
 
 #include <QLineEdit>
 #include <QRegExpValidator>
+#include <QPushButton>
 
 DebugWindow::DebugWindow(QWidget *parent)
         : QWidget(parent), container_(new QVBoxLayout(this)), widgets_() {
-    setGeometry(10, 10, 300, 0);
+    setGeometry(10, 10, 400, 0);
     setStyleSheet("background-color: rgba(155, 155, 155, 200); font: 18px;");
     container_->setSizeConstraint(QLayout::SetMinimumSize);
     container_->setAlignment(Qt::AlignTop);
 }
 
-QSlider *DebugWindow::addSlider(const std::string &key, const std::string &title, int startValue, int min, int max) {
+QSlider *DebugWindow::addSlider(const std::string &key, const std::string &title, int startValue, int min, int max,
+                                const std::optional<const std::function<void(int)>> &changedValueCallback) {
     auto layout = new QHBoxLayout();
 
     auto label = createLabel(title);
@@ -40,6 +42,10 @@ QSlider *DebugWindow::addSlider(const std::string &key, const std::string &title
     container_->addLayout(layout, 0);
 
     widgets_.insert({key, slider});
+
+    if (changedValueCallback.has_value())
+        QWidget::connect(slider, &QSlider::valueChanged, changedValueCallback.value());
+
     return slider;
 }
 
@@ -58,9 +64,50 @@ QSlider *DebugWindow::addSlider(const std::string &key, const std::string &title
     return valueField;
 }
 
+void *DebugWindow::addColorPicker(
+        const std::string &key, const std::string &title, const QColor &startColor,
+        const std::optional<const std::function<void(QColor)>> &changedValueCallback) {
+    auto layout = new QHBoxLayout();
+
+    auto label = createLabel(title);
+    auto colorPickerButton = new QPushButton();
+
+    const auto updateBackgroundColorForButton = [colorPickerButton](const QColor& color) {
+        QPalette palette = colorPickerButton->palette();
+        palette.setColor(QPalette::Button, color);
+        colorPickerButton->setAutoFillBackground(true);
+        colorPickerButton->setPalette(palette);
+        colorPickerButton->setText(color.name());
+    };
+
+    updateBackgroundColorForButton(startColor);
+
+    connect(colorPickerButton, &QPushButton::clicked, [this, startColor, changedValueCallback, updateBackgroundColorForButton]() {
+        auto colorDialog = new QColorDialog(startColor);
+
+        DebugWindow::connect(colorDialog, &QColorDialog::currentColorChanged, [&changedValueCallback, updateBackgroundColorForButton](const QColor& color) {
+            updateBackgroundColorForButton(color);
+
+            if (changedValueCallback.has_value())
+                changedValueCallback.value()(color);
+        });
+
+        colorDialog->setWindowFlags(colorDialog->windowFlags() & ~Qt::WindowContextHelpButtonHint);
+        colorDialog->show();
+    });
+
+    layout->addWidget(label);
+    layout->addWidget(colorPickerButton);
+    container_->addLayout(layout, 0);
+
+    widgets_.insert({key, colorPickerButton});
+
+    return colorPickerButton;
+}
+
 QLabel *DebugWindow::createLabel(const std::string &title) {
     auto label = new QLabel(title.c_str());
-    label->setFixedWidth(120);
+    label->setFixedWidth(160);
     return label;
 }
 
@@ -70,5 +117,3 @@ T *DebugWindow::getWidget(std::string &key) {
         return it->second;
     return nullptr;
 }
-
-

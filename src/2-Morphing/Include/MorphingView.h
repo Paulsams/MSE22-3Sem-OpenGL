@@ -6,17 +6,23 @@
 #include "Base/Time.h"
 
 #include "tiny_gltf.h"
-#include "ModelHolder.h"
 #include "CameraView.h"
 
 #include <QElapsedTimer>
 #include <QMatrix4x4>
-#include <QOpenGLBuffer>
 #include <QOpenGLShaderProgram>
-#include <QOpenGLVertexArrayObject>
 
-#include <functional>
 #include <memory>
+#include <qopengltexture.h>
+
+#include "OpenGLUniformBuffer.h"
+
+class Scene;
+class SceneNode;
+
+class LightInfo {
+    QColor color;
+};
 
 class MorphingView final : public fgl::GLWidget
 {
@@ -31,18 +37,26 @@ public: // fgl::GLWidget
 	void onResize(size_t width, size_t height) override;
 
 private:
+    std::unique_ptr<Scene> scene_;
+    std::shared_ptr<SceneNode> nodeDirectionalLight_;
+
     DebugWindow *debugWindow_;
     FrameCounter frameCounter_;
 
-	QMatrix4x4 model_;
-	QMatrix4x4 view_;
-	QMatrix4x4 projection_;
-
 	std::unique_ptr<QOpenGLTexture> texture_ = nullptr;
-	std::unique_ptr<QOpenGLShaderProgram> program_;
-    ModelHolder modelHolder_;
+	std::shared_ptr<QOpenGLShaderProgram> program_;
+
+	OpenGLUniformBuffer pointLights;
+	OpenGLUniformBuffer spotLights;
+	OpenGLUniformBuffer directionalLight;
+
     CameraView cameraView_;
     Time time_{};
 
 	bool animated_ = true;
+
+    float ambientStrength = 0.1f;
+    float specularStrength = 0.5f;
+    int powerSpecular = 128;
+    QColor lightColor = QColor(255, 255, 255);
 };

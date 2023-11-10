@@ -13,7 +13,7 @@ std::shared_ptr<SceneNode> LoadModelIterator::create() {
         initBufferForModelNodes(model_.nodes[node]);
     }
 
-    auto rootNode = std::make_shared<SceneNode>("Root");
+    auto rootNode = SceneNode::create("Root");
     for (int node: scene.nodes)
         rootNode->addChild(createAndBindRenderersForModelNodes(model_.nodes[node]));
 
@@ -39,15 +39,40 @@ void LoadModelIterator::initBufferForMesh(tinygltf::Mesh &) {
             continue;  // Unsupported bufferView.
         }
 
-        const tinygltf::Buffer &buffer = model_.buffers[bufferView.buffer];
-        std::cout << "bufferview.target " << bufferView.target << std::endl;
-
-        buffers_.insert({i, buffer});
+        bufferViews_.insert({static_cast<int>(i), bufferView});
     }
 }
 
 std::shared_ptr<SceneNode> LoadModelIterator::createAndBindRenderersForModelNodes(tinygltf::Node &node) {
-    auto currentRootNode = std::make_shared<SceneNode>(node.name);
+    auto currentRootNode = SceneNode::create(node.name);
+    auto &transform = currentRootNode->getTransform();
+
+    QMatrix4x4 offsetMatrix;
+    if (node.matrix.size() == 16) {
+        // Use `matrix' attribute
+        transform.setModelMatrix(QMatrix4x4(
+                node.matrix[0], node.matrix[1], node.matrix[2], node.matrix[3],
+                node.matrix[4], node.matrix[5], node.matrix[6], node.matrix[7],
+                node.matrix[8], node.matrix[9], node.matrix[10], node.matrix[11],
+                node.matrix[12], node.matrix[13], node.matrix[14], node.matrix[15])
+        );
+    } else {
+        offsetMatrix.setToIdentity();
+
+        // Assume Trans x Rotate x Scale order
+        if (node.translation.size() == 3) {
+            transform.setPosition(node.translation[0], node.translation[1], node.translation[2]);
+        }
+
+        if (node.rotation.size() == 4) {
+            transform.setRotation(QQuaternion(node.rotation[0], node.rotation[1],
+                                              node.rotation[2], node.rotation[3]));
+        }
+
+        if (node.scale.size() == 3) {
+            transform.setScale(node.scale[0], node.scale[1], node.scale[2]);
+        }
+    }
 
     if ((node.mesh >= 0) && (node.mesh < model_.meshes.size()))
         currentRootNode->addChild(createAndBindRenderersForMesh(model_.meshes[node.mesh]));
@@ -59,10 +84,10 @@ std::shared_ptr<SceneNode> LoadModelIterator::createAndBindRenderersForModelNode
 }
 
 std::shared_ptr<SceneNode> LoadModelIterator::createAndBindRenderersForMesh(tinygltf::Mesh &mesh) {
-    auto rootNodeForPrimitives = std::make_shared<SceneNode>(mesh.name);
+    auto rootNodeForPrimitives = SceneNode::create(mesh.name);
 
     for (const auto &primitive: mesh.primitives) {
-        std::shared_ptr<SceneNode> nodeForPrimitive = std::make_shared<SceneNode>("IDK need scene node");
+        std::shared_ptr<SceneNode> nodeForPrimitive = SceneNode::create("IDK need scene node");
         rootNodeForPrimitives->addChild(nodeForPrimitive);
         std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>(funcs_);
 
@@ -71,19 +96,16 @@ std::shared_ptr<SceneNode> LoadModelIterator::createAndBindRenderersForMesh(tiny
         if (indexAccessor.bufferView == -1)
             continue;
 
-        std::vector<BufferData> verticesData;
         std::vector<std::pair<GLint, AttributeInfo>> attributes;
 
         for (auto &attrib: primitive.attributes) {
             tinygltf::Accessor accessor = model_.accessors[attrib.second];
 
-            auto attributeBuffer = buffers_[accessor.bufferView];
-            const tinygltf::BufferView &bufferView = model_.bufferViews[accessor.bufferView];
-            verticesData.push_back(BufferData(&attributeBuffer.data.at(0) + bufferView.byteOffset,
-                                   static_cast<int>(bufferView.byteLength)));
-
             if (accessor.bufferView == -1)
                 continue;
+
+            tinygltf::BufferView &attributeBufferView = bufferViews_[accessor.bufferView];
+            const tinygltf::Buffer &buffer = model_.buffers[attributeBufferView.buffer];
 
             int byteStride =
                     accessor.ByteStride(model_.bufferViews[accessor.bufferView]);
@@ -104,7 +126,9 @@ std::shared_ptr<SceneNode> LoadModelIterator::createAndBindRenderersForMesh(tiny
                                 accessor.componentType,
                                 static_cast<int>(accessor.byteOffset),
                                 size,
-                                byteStride
+                                byteStride,
+                                BufferData(&buffer.data.at(0) + attributeBufferView.byteOffset,
+                                           static_cast<int>(attributeBufferView.byteLength))
                         ));
             } else {
                 std::cout << "vaa missing: " << attrib.first << std::endl;
@@ -113,13 +137,13 @@ std::shared_ptr<SceneNode> LoadModelIterator::createAndBindRenderersForMesh(tiny
 
         ProgramInfoFromObject programInfoFromObject(program_, std::move(attributes));
 
-        tinygltf::Buffer &indecesBuffer = buffers_.at(indexAccessor.bufferView);
-        const tinygltf::BufferView &bufferView = model_.bufferViews[indexAccessor.bufferView];
+        tinygltf::BufferView &indicesBufferBufferView = bufferViews_.at(indexAccessor.bufferView);
+        const tinygltf::Buffer &indicesBuffer = model_.buffers[indicesBufferBufferView.buffer];
 
-        BufferData indecesData(&indecesBuffer.data.at(0) + bufferView.byteOffset,
-                               static_cast<int>(bufferView.byteLength));
+        BufferData indicesData(&indicesBuffer.data.at(0) + indicesBufferBufferView.byteOffset,
+                               static_cast<int>(indicesBufferBufferView.byteLength));
 
-        GLenum mode = -1;
+        GLenum mode;
         if (primitive.mode == TINYGLTF_MODE_TRIANGLES) {
             mode = GL_TRIANGLES;
         } else if (primitive.mode == TINYGLTF_MODE_TRIANGLE_STRIP) {
@@ -134,6 +158,7 @@ std::shared_ptr<SceneNode> LoadModelIterator::createAndBindRenderersForMesh(tiny
             mode = GL_LINE_LOOP;
         } else {
             assert(0);
+            continue;
         }
 
         IndicesInfo indicesInfo(mode,
@@ -141,7 +166,7 @@ std::shared_ptr<SceneNode> LoadModelIterator::createAndBindRenderersForMesh(tiny
                                 indexAccessor.componentType,
                                 BUFFER_OFFSET(indexAccessor.byteOffset));
 
-        renderer->init(indicesInfo, verticesData, indecesData, programInfoFromObject);
+        renderer->init(indicesInfo, indicesData, programInfoFromObject);
 
         nodeForPrimitive->changeRenderer(std::move(renderer));
     }

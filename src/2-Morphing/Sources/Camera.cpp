@@ -26,11 +26,12 @@ void Camera::move(QVector3D offset) {
         return;
 
     auto rotatedOffset = rotation_ * offset;
-    setPosition(position_ - rotatedOffset);
+    setPosition(position_ + rotatedOffset);
 }
 
-void Camera::rotate(QQuaternion offset) {
-    rotation_ *= offset;
+void Camera::rotate(float yaw, float pitch) {
+    yaw_ += yaw;
+    pitch_ += pitch;
     updateViewMatrix();
 }
 
@@ -40,8 +41,21 @@ void Camera::updateProjectionMatrix() {
 }
 
 void Camera::updateViewMatrix() {
+    rotation_ = QQuaternion::fromEulerAngles(-pitch_, -yaw_, 0.0f);
+
     view_.setToIdentity();
-    QVector3D targetForward = rotation_ * QVector3D(0.0f, 0.0f, -1.0f);
-    QVector3D targetUp = rotation_ * QVector3D(0.0f, 1.0f, 0.0f);
-    view_.lookAt(position_, position_ + targetForward, targetUp);
+    view_.translate(position_);
+
+    QMatrix4x4 rotateMatrix;
+    rotateMatrix.setToIdentity();
+    rotateMatrix.rotate(yaw_, QVector3D(0, 1, 0));
+    view_ = rotateMatrix * view_;
+    rotateMatrix.setToIdentity();
+
+    auto temp_last_row = view_.row(3);
+    view_.setRow(3, QVector4D(0.0f, 0.0f, 0.0f, 1.0f));
+
+    rotateMatrix.rotate(pitch_, QVector3D(1, 0, 0));
+    view_ = rotateMatrix * view_;
+    view_.setRow(3, temp_last_row);
 }

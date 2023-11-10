@@ -3619,7 +3619,7 @@ static stbi_uc *stbi__resample_row_hv_2_simd(stbi_uc *out, stbi_uc *in_near, stb
       vst2_u8(out + i*2, o);
 #endif
 
-      // "previous" value for next iter
+      // "previous" value for next iterDraw
       t1 = 3*in_near[i+7] + in_far[i+7];
    }
 
