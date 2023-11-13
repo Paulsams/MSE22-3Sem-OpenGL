@@ -2,7 +2,7 @@
 #include <QSurfaceFormat>
 
 #include "MorphingView.h"
-#include "InputHandler.h"
+#include "../../Base/Include/Utils/InputHandler.h"
 
 namespace
 {
@@ -30,7 +30,7 @@ int main(int argc, char ** argv)
 
 	// Now create window.
 	MorphingView window;
-	window.resize(1280, 720);
+	window.resize(1280, 950);
 	window.show();
 
 	return app.exec();

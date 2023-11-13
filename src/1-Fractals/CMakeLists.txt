@@ -18,8 +18,8 @@ set(SRCS
         Shaders/mandelbrot.vert
         Sources/MoveFractalBehaviours/DragBehaviour.cpp
         Include/MoveFractalBehaviours/DragBehaviour.h
-        ../Base/FrameCounter.h
-        ../Base/FrameCounter.cpp
+        ../Base/Include/Utils/FrameCounter.h
+        ../Base/Sources/Utils/FrameCounter.cpp
 
         shaders.qrc
 )

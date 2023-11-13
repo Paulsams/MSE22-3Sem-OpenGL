@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+
 set(TARGET_NAME 2-Morphing)
 
 include_directories(Include)
@@ -5,45 +7,36 @@ include_directories(Sources)
 
 file(INSTALL Models DESTINATION ./)
 
-set(SRCS
-    Sources/main.cpp
-    Sources/MorphingView.cpp
-    Sources/Camera.cpp
-    Sources/CameraView.cpp
+set(SOURCES
+        Sources/Lights/PointLight.cpp
+        Sources/Lights/DirectionalLight.cpp
+        Sources/Lights/SpotLight.cpp
 
-    Include/MorphingView.h
-    Include/Camera.h
-    Include/CameraView.h
+        Sources/main.cpp
+        Sources/MorphingView.cpp
+)
 
-    Shaders/diffuse.frag
-    Shaders/diffuse.vert
-    Textures/voronoi.png
+set(INCLUDE
+        Include/Lights/LightsContainer.h
+        Include/Lights/PointLight.h
+        Include/Lights/DirectionalLight.h
+        Include/Lights/BaseLight.h
+        Include/Lights/SpotLight.h
 
-    resources.qrc
-        Sources/Renderer.cpp
-        Include/Renderer.h
-        Sources/LoaderModel.cpp
-        Include/LoaderModel.h
-        Sources/SceneNode.cpp
-        Include/SceneNode.h
-        Sources/LoadModelIterator.cpp
-        Include/LoadModelIterator.h
-        Sources/Scene.cpp
-        Include/Scene.h
-        Sources/Transform.cpp
-        Include/Transform.h
-        Sources/MoverOnArrows.cpp
-        Include/MoverOnArrows.h
-        Include/BaseComponent.h
-        Sources/InputHandler.cpp
-        Include/InputHandler.h
-        Sources/OpenGLUniformBuffer.cpp
-        Sources/OpenGLUniformBuffer.h
+        Include/MorphingView.h
+)
+
+set(RESOURCES
+        Shaders/diffuse.frag
+        Shaders/diffuse.vert
+        Textures/voronoi.png
+
+        resources.qrc
 )
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
-add_executable(${TARGET_NAME} ${SRCS})
+add_executable(${TARGET_NAME} ${SOURCES} ${INCLUDE} ${RESOURCES})
 
 target_link_libraries(${TARGET_NAME}
     PRIVATE

@@ -2,6 +2,7 @@
     <qresource prefix="/">
         <file>Models/Chess.glb</file>
         <file>Models/Sphere.glb</file>
+        <file>Models/Two models.glb</file>
     </qresource>
     <qresource prefix="/">
         <file>Textures/voronoi.png</file>

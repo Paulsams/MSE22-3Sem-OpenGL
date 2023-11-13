@@ -1,21 +1,17 @@
 #pragma once
 
-#include "Base/GLWidget.hpp"
-#include "Base/DebugWindow.h"
-#include "Base/FrameCounter.h"
-#include "Base/Time.h"
-
-#include "tiny_gltf.h"
-#include "CameraView.h"
-
-#include <QElapsedTimer>
-#include <QMatrix4x4>
-#include <QOpenGLShaderProgram>
+#include "Base/Include/GLWidget.hpp"
+#include "Base/Include/Utils/FrameCounter.h"
+#include "Base/Include/Utils/Time.h"
+#include "Base/Include/SceneLogic/Camera/CameraView.h"
+#include "Base/Include/Views/InspectorView.h"
+#include "Base/Include/Views/SceneHierarchyView.h"
 
 #include <memory>
-#include <qopengltexture.h>
 
-#include "OpenGLUniformBuffer.h"
+#include <QElapsedTimer>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLTexture>
 
 class Scene;
 class SceneNode;
@@ -38,25 +34,20 @@ public: // fgl::GLWidget
 
 private:
     std::unique_ptr<Scene> scene_;
-    std::shared_ptr<SceneNode> nodeDirectionalLight_;
 
-    DebugWindow *debugWindow_;
+    FieldsDrawer *debugWindow_;
+    InspectorView *inspector_;
+    SceneHierarchyView *sceneView_;
     FrameCounter frameCounter_;
 
-	std::unique_ptr<QOpenGLTexture> texture_ = nullptr;
 	std::shared_ptr<QOpenGLShaderProgram> program_;
-
-	OpenGLUniformBuffer pointLights;
-	OpenGLUniformBuffer spotLights;
-	OpenGLUniformBuffer directionalLight;
 
     CameraView cameraView_;
     Time time_{};
 
 	bool animated_ = true;
 
-    float ambientStrength = 0.1f;
-    float specularStrength = 0.5f;
-    int powerSpecular = 128;
-    QColor lightColor = QColor(255, 255, 255);
+    bool isMorphing_ = false;
+    int powerSpecular_ = 128;
+    QColor clearColor_ = QColor(70, 70, 70);
 };
