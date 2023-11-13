@@ -56,7 +56,8 @@ public:
 private:
     static constexpr int sizeData = sizeof(typename T::UniformData);
 
-    friend BaseLight;
+    template<typename TLight, typename TUniformData>
+    friend class BaseLight;
 
     void updatePoint(const int index, const typename T::UniformData& data) {
         buffer_.bind();

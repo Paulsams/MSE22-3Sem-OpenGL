@@ -12,6 +12,8 @@ if (MSVC)
     add_compile_options(/wd5240)
     # disable `no-if-not-aligned`
     add_compile_options(/wd4324)
+    # disable `'sprintf': This function or variable may be unsafe`
+    add_compile_options(/wd4996)
 else()
     # lots of warnings and all warnings as errors
     add_compile_options(-Wall -Wextra -pedantic -Werror)
