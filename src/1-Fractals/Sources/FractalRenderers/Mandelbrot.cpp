@@ -1,10 +1,6 @@
-#include <QMatrix4x4>
-#include <QSlider>
-#include <QOpenGLShaderProgram>
-
 #include "FractalRenderers/Mandelbrot.h"
 #include "FractalView.h"
-#include "Base/DebugWindow.h"
+#include "Base/Include/Views/FieldsDrawer.h"
 
 namespace Fractals {
     void Mandelbrot::init(FractalView &view, QOpenGLShaderProgram *program) {
@@ -13,12 +9,7 @@ namespace Fractals {
         viewPositionUniform_ = program->uniformLocation("viewPosition");
         maxIterationsUniform_ = program->uniformLocation("maxIterations");
 
-        auto iterCounter = view.getDebugContainer()->addSlider("Max Iterations", "Max Iterations",
-                                                               maxIterations_, 50, 300);
-
-        QWidget::connect(iterCounter, &QSlider::valueChanged, &view, [this](int newValue) {
-            maxIterations_ = newValue;
-        });
+        view.getDebugContainer()->addSlider("Max Iterations", &maxIterations_, 50, 300);
     }
 
     void Mandelbrot::render(FractalView &view, QOpenGLShaderProgram *program, double) {

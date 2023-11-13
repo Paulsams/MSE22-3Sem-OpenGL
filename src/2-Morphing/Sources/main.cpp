@@ -1,8 +1,7 @@
 #include <QApplication>
-#include <QSurfaceFormat>
 
 #include "MorphingView.h"
-#include "../../Base/Include/Utils/InputHandler.h"
+#include "Base/Include/Utils/InputHandler.h"
 
 namespace
 {
@@ -10,8 +9,6 @@ constexpr auto g_sampels = 16;
 constexpr auto g_gl_major_version = 3;
 constexpr auto g_gl_minor_version = 3;
 }// namespace
-
-InputHandler *InputHandler::_instance = nullptr;
 
 int main(int argc, char ** argv)
 {

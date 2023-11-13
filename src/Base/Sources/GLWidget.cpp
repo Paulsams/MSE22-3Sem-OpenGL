@@ -1,8 +1,11 @@
 #include "GLWidget.hpp"
+#include "Utils/InputHandler.h"
 
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+
+InputHandler *InputHandler::_instance = nullptr;
 
 namespace fgl {
 

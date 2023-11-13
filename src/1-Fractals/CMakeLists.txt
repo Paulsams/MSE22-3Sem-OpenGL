@@ -1,32 +1,40 @@
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+
 set(TARGET_NAME 1-FractalViewer)
 
 include_directories(Include)
 include_directories(Sources)
 
-set(SRCS
+set(INCLUDE
         Sources/main.cpp
         Sources/FractalView.cpp
+
+        Sources/FractalRenderers/Mandelbrot.cpp
+
+        Sources/MoveFractalBehaviours/MoveNearWindowSidesBehaviour.cpp
+        Sources/MoveFractalBehaviours/DragBehaviour.cpp
+)
+
+set(SOURCES
         Include/FractalView.h
-        Sources/FractalRenderers/Mandelbrot.cpp
-        Sources/FractalRenderers/Mandelbrot.cpp
+
         Include/FractalRenderers/Mandelbrot.h
         Include/FractalRenderers/BaseFractalRenderer.h
+
         Include/MoveFractalBehaviours/BaseMoveBehaviour.h
-        Sources/MoveFractalBehaviours/MoveNearWindowSidesBehaviour.cpp
         Include/MoveFractalBehaviours/MoveNearWindowSidesBehaviour.h
+        Include/MoveFractalBehaviours/DragBehaviour.h
+)
+
+set (RESOURCES
         Shaders/mandelbrot.frag
         Shaders/mandelbrot.vert
-        Sources/MoveFractalBehaviours/DragBehaviour.cpp
-        Include/MoveFractalBehaviours/DragBehaviour.h
-        ../Base/Include/Utils/FrameCounter.h
-        ../Base/Sources/Utils/FrameCounter.cpp
-
         shaders.qrc
 )
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
-add_executable(${TARGET_NAME} ${SRCS})
+add_executable(${TARGET_NAME} ${SOURCES} ${INCLUDE} ${RESOURCES})
 
 target_link_libraries(${TARGET_NAME}
     PRIVATE

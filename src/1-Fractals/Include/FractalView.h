@@ -1,26 +1,16 @@
 #pragma once
 
-#include "../../Base/Include/GLWidget.hpp"
+#include "Base/Include/GLWidget.hpp"
 #include "FractalRenderers/BaseFractalRenderer.h"
 #include "MoveFractalBehaviours/BaseMoveBehaviour.h"
-#include "../../Base/Include/FrameCounter.h"
+#include "Base/Include/Utils/FrameCounter.h"
 
-#include <QMatrix4x4>
 #include <QOpenGLBuffer>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
-#include <QQuaternion>
-#include <QVector2D>
-#include <QVector3D>
 #include <QElapsedTimer>
-#include <QPainter>
-#include <QBackingStore>
-#include <QOpenGLWidget>
-#include <QLayout>
 
 #include <memory>
-
-class DebugWindow;
 
 namespace Fractals {
     class FractalView final : public fgl::GLWidget {
@@ -34,7 +24,7 @@ namespace Fractals {
 
         void onResize(size_t width, size_t height) override;
 
-        DebugWindow *getDebugContainer() { return debugWindow_; }
+        FieldsDrawer *getDebugContainer() { return debugWindow_; }
 
     protected:
         void mousePressEvent(QMouseEvent *mouseEvent) override;
@@ -48,7 +38,7 @@ namespace Fractals {
         void closeEvent(QCloseEvent *event) override;
 
     private:
-        DebugWindow *debugWindow_;
+        FieldsDrawer *debugWindow_;
 
         QOpenGLBuffer vbo_{QOpenGLBuffer::Type::VertexBuffer};
         QOpenGLBuffer ibo_{QOpenGLBuffer::Type::IndexBuffer};

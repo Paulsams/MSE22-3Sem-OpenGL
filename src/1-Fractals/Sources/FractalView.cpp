@@ -1,5 +1,4 @@
 #include "FractalView.h"
-#include "Base/DebugWindow.h"
 
 #include <QMouseEvent>
 #include <QOpenGLFunctions>
@@ -9,6 +8,8 @@
 
 #include <array>
 #include <memory>
+
+#include "Base/Include/Views/FieldsDrawer.h"
 
 namespace {
     constexpr float lengthPlane = 3.0f;
@@ -26,8 +27,19 @@ namespace {
 namespace Fractals {
     FractalView::FractalView(std::unique_ptr<BaseFractalRenderer> &&renderer,
                              std::unique_ptr<BaseMoveBehaviour> &&moveBehaviour)
-            : debugWindow_(new DebugWindow(this)), renderer_(std::move(renderer)),
-              moveBehaviour_(std::move(moveBehaviour)), frameCounter_(*debugWindow_, 1000.0f) {}
+            : debugWindow_(new FieldsDrawer(160, this)), renderer_(std::move(renderer)),
+              moveBehaviour_(std::move(moveBehaviour)), frameCounter_(*debugWindow_, 1000.0f) {
+        // TODO: потому что не хотелся добавлять бэкграунд почему-то
+        auto* parentFormDebugWindow = new QWidget(this);
+        debugWindow_->setParent(parentFormDebugWindow);
+
+        parentFormDebugWindow->setStyleSheet("background-color: rgba(122, 122, 122, 200)");
+
+        // TODO: на старом ещё нормально расстягивалось, а тут не хочет
+        parentFormDebugWindow->setGeometry(10, 10, 400, 100);
+        debugWindow_->setGeometry(5, 5, 390, 90);
+        debugWindow_->setFontSize(18);
+    }
 
     void FractalView::onInit() {
         timer_.start();

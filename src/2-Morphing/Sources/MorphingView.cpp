@@ -31,7 +31,7 @@ MorphingView::MorphingView() noexcept
 
     // TODO: на старом ещё нормально расстягивалось, а тут не хочет
     parentFormDebugWindow->setGeometry(10, 10, 400, 200);
-    debugWindow_->setGeometry(5, 5, 390, 390);
+    debugWindow_->setGeometry(5, 5, 390, 190);
     debugWindow_->setFontSize(18);
 
     cameraView_.getCamera().setPosition({0.0f, -10.0f, 0.0f});
