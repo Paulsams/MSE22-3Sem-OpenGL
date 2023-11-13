@@ -55,7 +55,7 @@ void Renderer::init(const IndicesInfo &indicesInfo,
     modelUniformLocation_ = program_->uniformLocation("model");
     transposeInverseModelUniformLocation_ = program_->uniformLocation("transpose_inverse_model");
 
-    for (int i = 0; i < programInfoFromObject.attributes.size(); ++i) {
+    for (size_t i = 0; i < programInfoFromObject.attributes.size(); ++i) {
         auto& buffer = vertexBuffers_[i];
         auto&[location, attributeInfo] = programInfoFromObject.attributes[i];
 

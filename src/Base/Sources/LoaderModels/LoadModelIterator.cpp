@@ -60,7 +60,7 @@ std::shared_ptr<SceneNode> LoadModelIterator::create() {
 }
 
 void LoadModelIterator::initBufferForModelNodes(tinygltf::Node &node) {
-    if ((node.mesh >= 0) && (node.mesh < model_.meshes.size())) {
+    if ((node.mesh >= 0) && (node.mesh < static_cast<int>(model_.meshes.size()))) {
         initBufferForMesh(model_.meshes[node.mesh]);
     }
 

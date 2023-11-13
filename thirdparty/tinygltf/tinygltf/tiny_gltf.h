@@ -5181,8 +5181,8 @@ static bool ParseScene(Scene *scene, std::string *err, const detail::json &o,
     auto const &audio_ext = scene->extensions["KHR_audio"];
     if (audio_ext.Has("emitters")) {
       auto emittersArr = audio_ext.Get("emitters");
-      for (int i = 0; i < emittersArr.ArrayLen(); ++i) {
-        scene->audioEmitters.emplace_back(emittersArr.Get(i).GetNumberAsInt());
+      for (size_t i = 0; i < emittersArr.ArrayLen(); ++i) {
+        scene->audioEmitters.emplace_back(emittersArr.Get(static_cast<int>(i)).GetNumberAsInt());
       }
     } else {
       if (err) {

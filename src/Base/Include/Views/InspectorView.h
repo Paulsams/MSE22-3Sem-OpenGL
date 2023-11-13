@@ -13,6 +13,6 @@ public:
     void fillComponents(SceneNode& sceneNode);
 
 private:
-    QTabWidget tabs_;
     QLayout *container_;
+    QTabWidget tabs_;
 };

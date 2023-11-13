@@ -32,8 +32,8 @@ public:
 private:
     void updateModelMatrix();
 
-    QQuaternion rotation_;
     QVector3D position_;
+    QQuaternion rotation_;
     QVector3D scale_;
     QMatrix4x4 modelMatrix_;
 };

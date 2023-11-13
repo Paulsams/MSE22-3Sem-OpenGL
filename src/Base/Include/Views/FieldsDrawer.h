@@ -32,7 +32,7 @@ struct SpinxBoxInFloatInfo {
 class ToggleSwitch;
 
 class FieldsDrawer final : public QWidget {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     explicit FieldsDrawer(int widthLabel, QWidget* parent = nullptr);

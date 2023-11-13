@@ -5,7 +5,6 @@
 InspectorView::InspectorView(QWidget* parent)
     : QWidget(parent), container_(new QVBoxLayout(this)), tabs_(this) {
 
-
     setStyleSheet("background-color: rgba(155, 155, 155, 200);");
 
     tabs_.setTabShape(QTabWidget::Triangular);

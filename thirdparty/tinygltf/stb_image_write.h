@@ -267,9 +267,9 @@ STBIWDEF void stbi_flip_vertically_on_write(int flag)
 typedef struct
 {
    stbi_write_func *func;
-   void *context;
-   unsigned char buffer[64];
-   int buf_used;
+   void *context = nullptr;
+   unsigned char buffer[64] = {};
+   int buf_used = 0;
 } stbi__write_context;
 
 // initialize a callback-based context

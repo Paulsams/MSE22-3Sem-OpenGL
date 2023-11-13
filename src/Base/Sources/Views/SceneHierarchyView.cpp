@@ -9,7 +9,7 @@
 #include <QHeaderView>
 
 SceneHierarchyView::SceneHierarchyView(InspectorView&inspector, QWidget* parent)
-        : inspector_(inspector), container_(new QVBoxLayout(this)), QWidget(parent) {
+        : QWidget(parent), inspector_(inspector), container_(new QVBoxLayout(this)) {
     // TODO: хардкод цвета
     setStyleSheet("background-color: rgba(155, 155, 155, 200);");
     tree_.setModel(&model_);

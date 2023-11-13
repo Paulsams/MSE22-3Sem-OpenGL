@@ -2,5 +2,5 @@
 #include "SceneLogic/SceneNode.h"
 
 ItemInHierarchy::ItemInHierarchy(SceneNode& node)
-    : node_(node), QStandardItem(node.getName().c_str()) {
+    : QStandardItem(node.getName().c_str()), node_(node) {
 }
