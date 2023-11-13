@@ -33,6 +33,10 @@ public: // fgl::GLWidget
 	void onResize(size_t width, size_t height) override;
 
 private:
+	void createDirectionalLight();
+	void createPointLights();
+	void createSpotLights();
+
     std::unique_ptr<Scene> scene_;
 
     FieldsDrawer *debugWindow_;

@@ -82,39 +82,39 @@ void main() {
 
     vec3 result;
     for (int i = 0; i < numPointsLights; ++i) {
-        PointLight pointLight = points[i];
-        vec3 vectorToLight = pointLight.position - frag_position;
+        PointLight light = points[i];
+        vec3 vectorToLight = light.position - frag_position;
         float distance = length(vectorToLight);
 
-        if (distance > pointLight.distance)
+        if (distance > light.distance)
             continue;
 
-        vec3 light_dir = normalize(vectorToLight);
+        vec3 lightDirection = normalize(vectorToLight);
         float attenuation =
-            pointLight.constant
-            + pointLight.linear * distance
-            + pointLight.quadratic * (distance * distance);
+            light.constant
+            + light.linear * distance
+            + light.quadratic * (distance * distance);
 
-        result += calculatePhong(normal, light_dir, viewDirection,
-            pointLight.ambient, pointLight.diffuse, pointLight.specular) * (1.0f / attenuation);
+        result += calculatePhong(normal, lightDirection, viewDirection,
+            light.ambient, light.diffuse, light.specular) * (1.0f / attenuation);
     }
 
     for (int i = 0; i < numSpotsLights; ++i) {
         SpotLight light = spots[i];
         vec3 vectorToLight = light.position - frag_position;
-        // TODO: сделать дистанцию
-//        float distance = length(vectorToLight);
+        float distance = length(vectorToLight);
 
-//        if (distance > light.distance)
-//            continue;
+        if (distance > light.distance)
+            continue;
 
-        vec3 light_dir = normalize(vectorToLight);
-        float theta = dot(light_dir, normalize(-light.direction));
+        vec3 lightDirection = normalize(vectorToLight);
+        float theta = dot(lightDirection, normalize(-light.direction));
         float epsilon = light.innerOutOffInRadians - light.outerCutOffInRadians;
         float intensity = clamp((theta - light.outerCutOffInRadians) / epsilon, 0.0, 1.0);
 
-        result += calculatePhong(normal, light_dir, viewDirection,
-            light.ambient, light.diffuse * intensity, light.specular * intensity);
+        // TODO: мейби переписать на коэффициенты как в Point Light?
+        result += calculatePhong(normal, lightDirection, viewDirection,
+            light.ambient, light.diffuse * intensity, light.specular * intensity) * (1.0f / (distance));
     }
 
     result += calculatePhong(normal, directional.direction, viewDirection, vec3(1, 1, 1) * directional.ambient_strength,

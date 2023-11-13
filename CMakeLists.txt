@@ -10,9 +10,12 @@ if (MSVC)
     add_compile_options(/W4 /WX)
     # disable warning for qt.
     add_compile_options(/wd5240)
+    # disable `no-if-not-aligned`
+    add_compile_options(/wd4324)
 else()
     # lots of warnings and all warnings as errors
     add_compile_options(-Wall -Wextra -pedantic -Werror)
+    add_compile_options(-wno-if-not-aligned)
 endif()
 
 add_subdirectory(thirdparty)

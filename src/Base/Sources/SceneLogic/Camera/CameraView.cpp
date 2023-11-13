@@ -3,8 +3,8 @@
 #include <QKeyEvent>
 #include <QApplication>
 
-CameraView::CameraView(Camera camera, QWidget *parent)
-        : QWidget(parent), camera_(camera) {
+CameraView::CameraView(Camera camera, QWidget* parent)
+    : QWidget(parent), camera_(camera) {
     QApplication::instance()->installEventFilter(this);
     QWidget::setMouseTracking(true);
 
@@ -57,10 +57,10 @@ void CameraView::setMoveDirectionFromInput(const int keyCode, const int modifier
     }
 }
 
-bool CameraView::eventFilter(QObject *obj, QEvent *event) {
+bool CameraView::eventFilter(QObject*, QEvent* event) {
     switch (event->type()) {
         case QEvent::MouseButtonPress: {
-            auto *mouseEvent = (QMouseEvent *) event;
+            auto* mouseEvent = (QMouseEvent *)event;
 
             if (mouseEvent->button() == Qt::RightButton) {
                 lastMousePosition_ = mouseEvent->localPos();
@@ -75,7 +75,7 @@ bool CameraView::eventFilter(QObject *obj, QEvent *event) {
             if (!isDragged_)
                 return false;
 
-            auto *mouseEvent = (QMouseEvent *) event;
+            auto* mouseEvent = (QMouseEvent *)event;
 
             auto deltaMouse = mouseEvent->localPos() - lastMousePosition_;
             lastMousePosition_ = mouseEvent->localPos();
@@ -86,7 +86,7 @@ bool CameraView::eventFilter(QObject *obj, QEvent *event) {
             return false;
         }
         case QEvent::MouseButtonRelease: {
-            auto *mouseEvent = (QMouseEvent *) event;
+            auto* mouseEvent = (QMouseEvent *)event;
 
             if (mouseEvent->button() == Qt::RightButton)
                 isDragged_ = false;

@@ -30,7 +30,7 @@ public:
     }
 
     T& addLight() {
-        const int index = getNode().getChildren().size();
+        const int index = static_cast<int>(getNode().getChildren().size());
         const auto lightNode = SceneNode::create(
             std::string(T::defaultNameInHiearchy) + " " + std::to_string(index));
         std::unique_ptr<T> lightComponent = std::unique_ptr<T>(

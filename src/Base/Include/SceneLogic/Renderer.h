@@ -37,8 +37,8 @@ struct ProgramInfoFromObject {
 
     ProgramInfoFromObject() = delete;
 
-    ProgramInfoFromObject(const std::shared_ptr<QOpenGLShaderProgram>&program,
-                          const std::vector<std::pair<GLint, AttributeInfo>>&&attributes)
+    ProgramInfoFromObject(const std::shared_ptr<QOpenGLShaderProgram>& program,
+                          const std::vector<std::pair<GLint, AttributeInfo>>&& attributes)
         : program(program), attributes(std::move(attributes)) {
     }
 };
@@ -74,12 +74,12 @@ class Renderer {
 public:
     using TexturesContainer = std::vector<std::pair<TextureType, TextureMapperInfo>>;
 
-    void init(const IndicesInfo&indicesInfo,
-              const BufferData&indexesData,
-              ProgramInfoFromObject&programInfoFromObject,
+    void init(const IndicesInfo& indicesInfo,
+              const BufferData& indexesData,
+              ProgramInfoFromObject& programInfoFromObject,
               const TexturesContainer&& textures);
 
-    void draw(const QMatrix4x4&model, const QMatrix4x4&viewProjection);
+    void draw(const QMatrix4x4& model, const QMatrix4x4& viewProjection);
 
     explicit Renderer(QOpenGLFunctions&funcs);
 

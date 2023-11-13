@@ -1,6 +1,6 @@
 #include <Utils/ToggleSwitch.h>
 
-ToggleSwitch::ToggleSwitch(QWidget *parent) :
+ToggleSwitch::ToggleSwitch(QWidget* parent) :
     QAbstractButton(parent),
     m_status(false),
     m_margin(3),
@@ -9,7 +9,7 @@ ToggleSwitch::ToggleSwitch(QWidget *parent) :
     this->setBrush(QColor(Qt::darkGreen));
 }
 
-ToggleSwitch::ToggleSwitch(const QBrush &brush, QWidget *parent) :
+ToggleSwitch::ToggleSwitch(const QBrush& brush, QWidget* parent) :
     QAbstractButton(parent),
     m_status(false),
     m_margin(3),
@@ -18,7 +18,7 @@ ToggleSwitch::ToggleSwitch(const QBrush &brush, QWidget *parent) :
     this->setBrush(brush);
 }
 
-void ToggleSwitch::paintEvent(QPaintEvent *event)
+void ToggleSwitch::paintEvent(QPaintEvent*)
 {
     QPainter painter(this);
     painter.setPen(Qt::NoPen);

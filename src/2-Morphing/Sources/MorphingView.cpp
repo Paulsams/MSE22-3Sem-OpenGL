@@ -11,7 +11,6 @@
 
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
-#include <QApplication>
 #include <memory>
 
 MorphingView::MorphingView() noexcept
@@ -61,114 +60,9 @@ void MorphingView::onInit() {
         scene_->getRootNode().addChild(nodeWithLoadModel);
     }
 
-    {
-        const auto containerForDirectionalLightsNode = SceneNode::create("Directional Lights");
-        const auto lightsContainer = new LightsContainer<DirectionalLight>(
-            *this, 0, 1,
-            *program_, "DirectionalLight"
-        );
-        containerForDirectionalLightsNode->addComponent(std::unique_ptr<LightsContainer<DirectionalLight>>(lightsContainer));
-
-        DirectionalLight& light = lightsContainer->addLight();
-        light.getNode().getTransform().setRotation(QQuaternion::fromAxisAndAngle(
-            QVector3D(1.0f, 0.0f, 0.0f),
-            45.0f
-        ));
-        light.setAllData(
-            {0.1f, 0.1f, 0.1f},
-            0.05f
-        );
-        light.setColor({0.1f, 0.1f, 0.1f});
-        light.setAmbientStrength(0.05f);
-
-        scene_->getRootNode().addChild(containerForDirectionalLightsNode);
-    }
-
-    {
-        const auto containerForPointLightsNode = SceneNode::create("Point Lights");
-        const auto lightsContainer = new LightsContainer<PointLight>(
-            *this, 1, 10,
-            *program_, "PointLights"
-        );
-        containerForPointLightsNode->addComponent(std::unique_ptr<LightsContainer<PointLight>>(lightsContainer));
-
-        PointLight& firstPoint = lightsContainer->addLight();
-        firstPoint.getNode().getTransform().setPosition({0.0f, 7.0f, -10.0f});
-        firstPoint.setAllData(
-            10.0f,
-            // TODO: а нужен ли вообще эмбиент, кроме направленного источника???
-            {0.0f, 0.0f, 0.0f},
-            {0.5f, 1.0f, 0.5f},
-            {0.5f, 1.0f, 0.5f},
-            1.0f,
-            0.4f,
-            0.6f
-        );
-
-        if (const auto nodeWithLoadModel = LoaderModel::load("../Models/Sphere.glb", *this, program_)) {
-            firstPoint.getNode().addChild(nodeWithLoadModel);
-        }
-
-        PointLight& secondPoint = lightsContainer->addLight();
-        secondPoint.getNode().getTransform().setPosition({0.0f, 7.0f, 10.0f});
-        secondPoint.setAllData(
-            5.0f,
-            {0.0f, 0.0f, 0.0f},
-            {1.0f, 0.5f, 0.8f},
-            {1.0f, 0.5f, 0.8f},
-            1.0f,
-            0.9f,
-            2.0f
-        );
-
-        if (const auto nodeWithLoadModel = LoaderModel::load("../Models/Sphere.glb", *this, program_)) {
-            secondPoint.getNode().addChild(nodeWithLoadModel);
-        }
-
-        scene_->getRootNode().addChild(containerForPointLightsNode);
-    }
-
-    {
-        const auto containerForPointLightsNode = SceneNode::create("Spot Lights");
-        const auto lightsContainer = new LightsContainer<SpotLight>(
-            *this, 2, 10,
-            *program_, "SpotLights"
-        );
-        containerForPointLightsNode->addComponent(std::unique_ptr<LightsContainer<SpotLight>>(lightsContainer));
-
-        SpotLight& firstLight = lightsContainer->addLight();
-        firstLight.getNode().getTransform().setPosition({10.0f, 7.0f, 0.0f});
-        firstLight.getNode().getTransform().setRotation(QQuaternion::fromAxisAndAngle(
-            QVector3D(1.0f, 0.0f, 0.0f),
-            180.0f
-        ));
-
-        firstLight.setAllData(
-            5.0f,
-            30.0f,
-            50.0f,
-            {0.0f, 0.0f, 0.0f},
-            {0.7f, 0.3f, 0.1f},
-            {0.1f, 0.4f, 0.8f}
-        );
-
-        SpotLight& secondLight = lightsContainer->addLight();
-        secondLight.getNode().getTransform().setPosition({-10.0f, 7.0f, 0.0f});
-        secondLight.getNode().getTransform().setRotation(QQuaternion::fromEulerAngles(
-            0.0f, 180.0f, 150.0f
-        ));
-
-        secondLight.setAllData(
-            5.0f,
-            60.0f,
-            80.0f,
-            {0.0f, 0.0f, 0.0f},
-            {0.9f, 0.1f, 0.7f},
-            {0.2f, 0.2f, 0.2f}
-        );
-
-        scene_->getRootNode().addChild(containerForPointLightsNode);
-    }
+    createDirectionalLight();
+    createPointLights();
+    createSpotLights();
 
     // Release all
     program_->release();
@@ -212,7 +106,7 @@ void MorphingView::onRender() {
     program_->bind();
 
     program_->setUniformValue("power_specular", powerSpecular_);
-    // TODO: чёрт знает почему
+    // TODO: чёрт знает почему. Надо разбираться.
     auto viewPosition = camera.getPosition();
     viewPosition.setX(-viewPosition.x());
     viewPosition.setY(-viewPosition.y());
@@ -235,6 +129,115 @@ void MorphingView::onRender() {
     if (animated_) {
         update();
     }
+}
+
+void MorphingView::createDirectionalLight() {
+    const auto containerForDirectionalLightsNode = SceneNode::create("Directional Lights");
+    const auto lightsContainer = new LightsContainer<DirectionalLight>(
+        *this, 0, 1,
+        *program_, "DirectionalLight"
+    );
+    containerForDirectionalLightsNode->addComponent(std::unique_ptr<LightsContainer<DirectionalLight>>(lightsContainer));
+
+    DirectionalLight& light = lightsContainer->addLight();
+    light.getNode().getTransform().setRotation(QQuaternion::fromAxisAndAngle(
+        QVector3D(1.0f, 0.0f, 0.0f),
+        45.0f
+    ));
+    light.setAllData(
+        {0.1f, 0.1f, 0.1f},
+        0.05f
+    );
+    light.setColor({0.1f, 0.1f, 0.1f});
+    light.setAmbientStrength(0.05f);
+
+    scene_->getRootNode().addChild(containerForDirectionalLightsNode);
+}
+
+void MorphingView::createPointLights() {
+    const auto containerForPointLightsNode = SceneNode::create("Point Lights");
+    const auto lightsContainer = new LightsContainer<PointLight>(
+        *this, 1, 10,
+        *program_, "PointLights"
+    );
+    containerForPointLightsNode->addComponent(std::unique_ptr<LightsContainer<PointLight>>(lightsContainer));
+
+    PointLight& firstPoint = lightsContainer->addLight();
+    firstPoint.getNode().getTransform().setPosition({0.0f, 7.0f, -10.0f});
+    firstPoint.setAllData(
+        10.0f,
+        // TODO: а нужен ли вообще эмбиент, кроме направленного источника???
+        {0.0f, 0.0f, 0.0f},
+        {0.5f, 1.0f, 0.5f},
+        {0.5f, 1.0f, 0.5f},
+        1.0f,
+        0.4f,
+        0.6f
+    );
+
+    if (const auto nodeWithLoadModel = LoaderModel::load("../Models/Sphere.glb", *this, program_)) {
+        firstPoint.getNode().addChild(nodeWithLoadModel);
+    }
+
+    PointLight& secondPoint = lightsContainer->addLight();
+    secondPoint.getNode().getTransform().setPosition({0.0f, 7.0f, 10.0f});
+    secondPoint.setAllData(
+        5.0f,
+        {0.0f, 0.0f, 0.0f},
+        {1.0f, 0.5f, 0.8f},
+        {1.0f, 0.5f, 0.8f},
+        1.0f,
+        0.9f,
+        2.0f
+    );
+
+    if (const auto nodeWithLoadModel = LoaderModel::load("../Models/Sphere.glb", *this, program_)) {
+        secondPoint.getNode().addChild(nodeWithLoadModel);
+    }
+
+    scene_->getRootNode().addChild(containerForPointLightsNode);
+}
+
+void MorphingView::createSpotLights() {
+    const auto containerForPointLightsNode = SceneNode::create("Spot Lights");
+    const auto lightsContainer = new LightsContainer<SpotLight>(
+        *this, 2, 10,
+        *program_, "SpotLights"
+    );
+    containerForPointLightsNode->addComponent(std::unique_ptr<LightsContainer<SpotLight>>(lightsContainer));
+
+    SpotLight& firstLight = lightsContainer->addLight();
+    firstLight.getNode().getTransform().setPosition({10.0f, 7.0f, 0.0f});
+    firstLight.getNode().getTransform().setRotation(QQuaternion::fromAxisAndAngle(
+        QVector3D(1.0f, 0.0f, 0.0f),
+        180.0f
+    ));
+
+    firstLight.setAllData(
+        5.0f,
+        30.0f,
+        50.0f,
+        {0.0f, 0.0f, 0.0f},
+        {0.7f, 0.3f, 0.1f},
+        {0.1f, 0.4f, 0.8f}
+    );
+
+    SpotLight& secondLight = lightsContainer->addLight();
+    secondLight.getNode().getTransform().setPosition({-10.0f, 7.0f, 0.0f});
+    secondLight.getNode().getTransform().setRotation(QQuaternion::fromEulerAngles(
+        0.0f, 180.0f, 150.0f
+    ));
+
+    secondLight.setAllData(
+        13.0f,
+        60.0f,
+        80.0f,
+        {0.0f, 0.0f, 0.0f},
+        {0.9f, 0.1f, 0.7f},
+        {0.2f, 0.2f, 0.2f}
+    );
+
+    scene_->getRootNode().addChild(containerForPointLightsNode);
 }
 
 void MorphingView::onResize(const size_t width, const size_t height) {

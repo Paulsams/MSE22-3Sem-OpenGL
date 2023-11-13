@@ -3034,7 +3034,7 @@ bool GetFileSizeInBytes(size_t *filesize_out, std::string *err,
       (*err) += "File is empty : " + filepath + "\n";
     }
     return false;
-  } else if (sz >= (std::numeric_limits<std::streamoff>::max)()) {
+  } else if (sz >= static_cast<size_t>((std::numeric_limits<std::streamoff>::max)())) {
     if (err) {
       (*err) += "Invalid file size : " + filepath + "\n";
     }
@@ -3129,7 +3129,7 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err,
       (*err) += "File is empty : " + filepath + "\n";
     }
     return false;
-  } else if (sz >= (std::numeric_limits<std::streamoff>::max)()) {
+  } else if (sz >= static_cast<size_t>((std::numeric_limits<std::streamoff>::max)())) {
     if (err) {
       (*err) += "Invalid file size : " + filepath + "\n";
     }
@@ -5181,7 +5181,7 @@ static bool ParseScene(Scene *scene, std::string *err, const detail::json &o,
     auto const &audio_ext = scene->extensions["KHR_audio"];
     if (audio_ext.Has("emitters")) {
       auto emittersArr = audio_ext.Get("emitters");
-      for (size_t i = 0; i < emittersArr.ArrayLen(); ++i) {
+      for (int i = 0; i < emittersArr.ArrayLen(); ++i) {
         scene->audioEmitters.emplace_back(emittersArr.Get(i).GetNumberAsInt());
       }
     } else {
