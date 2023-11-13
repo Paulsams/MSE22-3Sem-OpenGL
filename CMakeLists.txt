@@ -15,7 +15,7 @@ if (MSVC)
 else()
     # lots of warnings and all warnings as errors
     add_compile_options(-Wall -Wextra -pedantic -Werror)
-    add_compile_options(-wno-if-not-aligned)
+    add_compile_options(-Wno-if-not-aligned)
 endif()
 
 add_subdirectory(thirdparty)
