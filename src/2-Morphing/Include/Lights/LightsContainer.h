@@ -9,8 +9,12 @@
 template<typename TLight, typename TUniformData>
 class BaseLight;
 
+struct ILightsContainer {
+    virtual void bindLights() = 0;
+};
+
 template<typename T>
-class LightsContainer final : public BaseComponent {
+class LightsContainer final : public BaseComponent, public ILightsContainer {
 public:
     explicit LightsContainer(QOpenGLExtraFunctions& funcs, const int location, int countLightsInShader,
                              const QOpenGLShaderProgram& program, const std::string& blockName)
@@ -27,6 +31,10 @@ public:
         buffer_.allocate(blockSize, location);
 
         buffer_.release();
+    }
+
+    void bindLights() override {
+        buffer_.bindForProgram();
     }
 
     T& addLight() {

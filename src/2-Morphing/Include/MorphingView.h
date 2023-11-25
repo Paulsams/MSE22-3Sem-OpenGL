@@ -13,6 +13,8 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 
+#include "Lights/LightsContainer.h"
+
 class Scene;
 class SceneNode;
 
@@ -48,6 +50,8 @@ private:
 
     CameraView cameraView_;
     Time time_{};
+
+	std::vector<ILightsContainer*> lightsContainers_;
 
 	bool animated_ = true;
 

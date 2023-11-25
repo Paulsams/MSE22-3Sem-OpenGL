@@ -100,10 +100,12 @@ void MorphingView::onRender() {
 
     scene_->iterUpdate(time_.getDeltaTime());
 
-    auto viewProjection = camera.getProjectionMatrix() * camera.getViewMatrix();
+    const auto viewProjection = camera.getProjectionMatrix() * camera.getViewMatrix();
 
     // Bind VAO and shader program
     program_->bind();
+    for (ILightsContainer* lightsContainer : lightsContainers_)
+        lightsContainer->bindLights();
 
     program_->setUniformValue("power_specular", powerSpecular_);
     // TODO: чёрт знает почему. Надо разбираться.
@@ -111,6 +113,7 @@ void MorphingView::onRender() {
     viewPosition.setX(-viewPosition.x());
     viewPosition.setY(-viewPosition.y());
     viewPosition.setZ(-viewPosition.z());
+    // TODO: кешировать юнимформ неймы в индексы
     program_->setUniformValue("view_position", viewPosition);
     program_->setUniformValue("time", time_.getTime());
     program_->setUniformValue("radius", 1.0f);
@@ -151,6 +154,7 @@ void MorphingView::createDirectionalLight() {
     light.setColor({0.1f, 0.1f, 0.1f});
     light.setAmbientStrength(0.05f);
 
+    lightsContainers_.push_back(lightsContainer);
     scene_->getRootNode().addChild(containerForDirectionalLightsNode);
 }
 
@@ -195,6 +199,7 @@ void MorphingView::createPointLights() {
         secondPoint.getNode().addChild(nodeWithLoadModel);
     }
 
+    lightsContainers_.push_back(lightsContainer);
     scene_->getRootNode().addChild(containerForPointLightsNode);
 }
 
@@ -237,6 +242,7 @@ void MorphingView::createSpotLights() {
         {0.2f, 0.2f, 0.2f}
     );
 
+    lightsContainers_.push_back(lightsContainer);
     scene_->getRootNode().addChild(containerForPointLightsNode);
 }
 
@@ -245,6 +251,7 @@ void MorphingView::onResize(const size_t width, const size_t height) {
     glViewport(0, 0, static_cast<GLint>(width), static_cast<GLint>(height));
 
     cameraView_.getCamera().setAspect(static_cast<float>(width) / static_cast<float>(height));
+    // TODO: хардкод размеров окон для значений
     sceneView_->setGeometry(static_cast<int>(width) - 300, 0, 300, 500);
     inspector_->setGeometry(static_cast<int>(width) - 450, static_cast<int>(height) - 400, 450, 400);
 }

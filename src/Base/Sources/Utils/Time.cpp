@@ -7,6 +7,7 @@ void Time::update() {
 }
 
 void Time::reset() {
-    Time::update();
+    update();
     deltaTime_ = 0.0f;
+    timer_.start();
 }
