@@ -2,19 +2,41 @@
 #include "Views//FieldsDrawer.h"
 #include "SceneLogic/SceneNode.h"
 
-InspectorView::InspectorView(QWidget* parent)
-    : QWidget(parent), container_(new QVBoxLayout(this)), tabs_(this) {
+#include <QSizeGrip>
 
+InspectorView::InspectorView(QWidget* parent)
+    : QWidget(parent), container_(new QGridLayout(this)) {
     setStyleSheet("background-color: rgba(155, 155, 155, 200);");
 
     tabs_.setTabShape(QTabWidget::Triangular);
     tabs_.setTabPosition(QTabWidget::West);
 
+    // TODO: придумать как перенести это без дубляжа в SceneHierarchy
     container_->setSizeConstraint(QLayout::SetMaximumSize);
     container_->setAlignment(Qt::AlignTop);
+    container_->setContentsMargins(0, 0, 5, 5);
+    container_->setSpacing(0);
 
-    container_->addWidget(&tabs_);
+    container_->addWidget(&tabs_, 1, 1);
     tabs_.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    tabs_.setContentsMargins(0, 0, 0, 0);
+
+    this->setWindowFlags(Qt::SubWindow);
+    auto * sizeGrip = new QSizeGrip(this);
+    sizeGrip->setFixedSize(20, 20);
+    container_->addWidget(sizeGrip, 0, 0, Qt::AlignLeft | Qt::AlignTop);
+
+    auto sizeGripLeft = new QSizeGrip(this);
+    sizeGripLeft->setFixedWidth(20);
+
+    container_->addWidget(sizeGripLeft, 1, 0);
+    sizeGripLeft->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+
+    auto * sizeGripTop = new QSizeGrip(this);
+    sizeGripTop->setFixedHeight(20);
+
+    container_->addWidget(sizeGripTop, 0, 1);
+    sizeGripTop->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 }
 
 void InspectorView::clear() {

@@ -1,4 +1,7 @@
 #include "LoaderModels/LoaderModel.h"
+
+#include <filesystem>
+
 #include "SceneLogic/SceneNode.h"
 #include "LoaderModels/LoadModelIterator.h"
 
@@ -8,22 +11,29 @@
 
 std::shared_ptr<SceneNode> LoaderModel::load(const char *filename, QOpenGLFunctions &glFuncs,
                                              const std::shared_ptr<QOpenGLShaderProgram> &program) {
-    const auto model = loadModel(filename);
+    const std::filesystem::path path(filename);
+    const auto model = loadModel(path);
     if (!model)
         return nullptr;
 
-    auto newNode = LoadModelIterator(glFuncs, program, *model).create();
+    auto newNode = LoadModelIterator(glFuncs, program, *model).create(path);
     return newNode;
 }
 
-std::unique_ptr<tinygltf::Model> LoaderModel::loadModel(const char *filename) {
+std::unique_ptr<tinygltf::Model> LoaderModel::loadModel(const std::filesystem::path& path) {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
     std::string err;
     std::string warn;
 
-    // TODO: Уметь читать также из аськи
-    bool result = loader.LoadBinaryFromFile(&model, &err, &warn, filename);
+    const std::string filename = path.string();
+    bool result;
+    if (path.extension() == ".gltf") {
+        result = loader.LoadASCIIFromFile(&model, &err, &warn, filename);
+    } else {
+        result = loader.LoadBinaryFromFile(&model, &err, &warn, filename);
+    }
+
     if (!warn.empty())
         std::cout << "WARN: " << warn << std::endl;
 

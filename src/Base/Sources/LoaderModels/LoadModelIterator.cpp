@@ -1,4 +1,7 @@
 #include "LoaderModels/LoadModelIterator.h"
+
+#include <filesystem>
+
 #include "SceneLogic/SceneNode.h"
 
 #include <memory>
@@ -9,15 +12,14 @@
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
-std::shared_ptr<SceneNode> LoadModelIterator::create() {
+std::shared_ptr<SceneNode> LoadModelIterator::create(const std::filesystem::path& path) {
     for (auto& textureInModel : model_.textures) {
         tinygltf::Image &image = model_.images[textureInModel.source];
 
         QOpenGLTexture* texture;
 
         if (!image.uri.empty()) {
-            // TODO: Проверить, что грузится по пути текстура
-            texture = new QOpenGLTexture(QImage(image.uri.c_str()));
+            texture = new QOpenGLTexture(QImage((path.parent_path() / image.uri).string().c_str()));
             texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
             texture->setWrapMode(QOpenGLTexture::WrapMode::Repeat);
         } else {
@@ -80,6 +82,7 @@ void LoadModelIterator::initBufferForMesh(tinygltf::Mesh&) {
             continue;  // Unsupported bufferView.
         }
 
+        // TODO: хочется переиспользовать буфера, если они одинаковые юзаются
         bufferViews_.insert({static_cast<int>(i), bufferView});
     }
 }

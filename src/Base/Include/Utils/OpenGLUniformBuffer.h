@@ -19,6 +19,6 @@ private:
     GLuint id_;
     QOpenGLExtraFunctions& funcs_;
 
-    int blockSize_;
-    int blockBindingIndex_;
+    int blockSize_ = -1;
+    int blockBindingIndex_ = -1;
 };

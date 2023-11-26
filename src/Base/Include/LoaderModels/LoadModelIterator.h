@@ -1,13 +1,17 @@
 #pragma once
 
-#include "tiny_gltf.h"
-#include <unordered_map>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 
+#include "tiny_gltf.h"
+
+#include <unordered_map>
+#include <filesystem>
+
 class SceneNode;
 
+// TODO: сделать так, чтобы он возвращал некий меш, а затем по нему просто дублировать модели, но исопльзуя общие буфферы
 class LoadModelIterator {
 public:
     explicit LoadModelIterator(QOpenGLFunctions &funcs,
@@ -15,7 +19,7 @@ public:
                                tinygltf::Model &model)
             : funcs_(funcs), program_(program), model_(model) {}
 
-    std::shared_ptr<SceneNode> create();
+    std::shared_ptr<SceneNode> create(const std::filesystem::path& path);
 
 private:
     void initBufferForModelNodes(tinygltf::Node &node);

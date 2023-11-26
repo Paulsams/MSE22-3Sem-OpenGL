@@ -1,10 +1,12 @@
 #pragma once
 
 #include <QTabWidget>
+#include <QGridLayout>
 
 class FieldsDrawer;
 class SceneNode;
 
+// TODO: добавить скролл
 class InspectorView final : public QWidget {
 public:
     explicit InspectorView(QWidget *parent = nullptr);
@@ -13,6 +15,6 @@ public:
     void fillComponents(SceneNode& sceneNode);
 
 private:
-    QLayout *container_;
+    QGridLayout *container_;
     QTabWidget tabs_;
 };

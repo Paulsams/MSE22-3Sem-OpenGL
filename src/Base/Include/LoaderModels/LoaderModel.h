@@ -5,6 +5,8 @@
 
 #include "tiny_gltf.h"
 
+#include <filesystem>
+
 class SceneNode;
 
 class LoaderModel {
@@ -13,5 +15,5 @@ public:
                                            const std::shared_ptr<QOpenGLShaderProgram> &program);
 
 private:
-    static std::unique_ptr<tinygltf::Model> loadModel(const char *filename);
+    static std::unique_ptr<tinygltf::Model> loadModel(const std::filesystem::path& path);
 };
