@@ -40,6 +40,7 @@ std::unique_ptr<tinygltf::Model> LoaderModel::loadModel(const std::filesystem::p
     if (!err.empty())
         std::cout << "ERR: " << err << std::endl;
 
+    // TODO: более понятные ошибки. Например не нашёлся файл
     if (!result) {
         std::cout << "Failed to load glTF: " << filename << std::endl;
         return nullptr;

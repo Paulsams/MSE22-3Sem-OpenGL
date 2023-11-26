@@ -22,7 +22,7 @@ MorphingView::MorphingView() noexcept
       program_(std::make_shared<QOpenGLShaderProgram>(this)),
       cameraView_(Camera{0.0f, 60.0f, 0.1f, 100.0f}, this) {
 
-    // TODO: весь ниже код, потому что не хотелся добавлять бэкграунд почему-то
+    // TODO: весь ниже код существует, потому что не хотелся добавлять бэкграунд почему-то
     auto* parentFormDebugWindow = new QWidget(this);
     debugWindow_->setParent(parentFormDebugWindow);
 
@@ -56,7 +56,7 @@ void MorphingView::onInit() {
     program_->bind();
 
     // if (const auto nodeWithLoadModel = LoaderModel::load("../Models/Two Models.glb", *this, program_)) {
-    if (const auto nodeWithLoadModel = LoaderModel::load("../Models/latitude_and_longitude_low_poly/scene.gltf", *this, program_)) {
+    if (const auto nodeWithLoadModel = LoaderModel::load("../Models/chess.glb", *this, program_)) {
         scene_->getRootNode().addChild(nodeWithLoadModel);
     }
 

@@ -13,27 +13,28 @@ InspectorView::InspectorView(QWidget* parent)
 
     // TODO: придумать как перенести это без дубляжа в SceneHierarchy
     container_->setSizeConstraint(QLayout::SetMaximumSize);
-    container_->setAlignment(Qt::AlignTop);
     container_->setContentsMargins(0, 0, 5, 5);
     container_->setSpacing(0);
 
     container_->addWidget(&tabs_, 1, 1);
     tabs_.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    tabs_.setMinimumSize(250, 200);
     tabs_.setContentsMargins(0, 0, 0, 0);
 
+    constexpr int sizeGrip = 20;
     this->setWindowFlags(Qt::SubWindow);
-    auto * sizeGrip = new QSizeGrip(this);
-    sizeGrip->setFixedSize(20, 20);
-    container_->addWidget(sizeGrip, 0, 0, Qt::AlignLeft | Qt::AlignTop);
+    auto * sizeGripLeftTop = new QSizeGrip(this);
+    sizeGripLeftTop->setFixedSize(sizeGrip, sizeGrip);
+    container_->addWidget(sizeGripLeftTop, 0, 0, Qt::AlignLeft | Qt::AlignTop);
 
-    auto sizeGripLeft = new QSizeGrip(this);
-    sizeGripLeft->setFixedWidth(20);
+    auto* sizeGripLeft = new QSizeGrip(this);
+    sizeGripLeft->setFixedWidth(sizeGrip);
 
     container_->addWidget(sizeGripLeft, 1, 0);
     sizeGripLeft->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 
-    auto * sizeGripTop = new QSizeGrip(this);
-    sizeGripTop->setFixedHeight(20);
+    auto* sizeGripTop = new QSizeGrip(this);
+    sizeGripTop->setFixedHeight(sizeGrip);
 
     container_->addWidget(sizeGripTop, 0, 1);
     sizeGripTop->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
