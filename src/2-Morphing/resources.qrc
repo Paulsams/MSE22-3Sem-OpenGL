@@ -6,6 +6,7 @@
     </qresource>
     <qresource prefix="/">
         <file>Textures/voronoi.png</file>
+        <file>Models/latitude_and_longitude_low_poly/textures/matsurface_material_baseColor.png</file>
     </qresource>
     <qresource prefix="/">
         <file>Shaders/diffuse.frag</file>
