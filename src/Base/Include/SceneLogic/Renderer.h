@@ -62,6 +62,7 @@ enum struct TextureType {
 
 struct TextureMapperInfo {
     QVector3D color;
+    // TODO: Мейби тут??? QOpenGLTexturePrivate::destroy() called without a current context. Texture has not been destroyed.
     std::shared_ptr<QOpenGLTexture> texture;
 
     TextureMapperInfo(const QVector3D& color, const std::shared_ptr<QOpenGLTexture>& texture)

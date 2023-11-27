@@ -75,7 +75,7 @@ vec3 calculatePhong(vec3 normal, vec3 lightDirection, vec3 viewDirection, vec3 a
 
 void main() {
     vec3 texturePixel = vec3(texture(duffuse_tex, vert_tex).xyz);
-    vec3 objectColor = (texturePixel == vec3(0.0f) ? vec3(1.0f) : texturePixel) * duffuse_color;
+    vec3 objectColor = texturePixel * duffuse_color;
 
     vec3 normal = normalize(vert_normal);
     vec3 viewDirection = normalize(view_position - frag_position);

@@ -1,7 +1,4 @@
 #include "LoaderModels/LoadModelIterator.h"
-
-#include <filesystem>
-
 #include "SceneLogic/SceneNode.h"
 
 #include <memory>
@@ -9,11 +6,18 @@
 #include <vector>
 
 #include <QOpenGLTexture>
+#include <filesystem>
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 std::shared_ptr<SceneNode> LoadModelIterator::create(const std::filesystem::path& path) {
-    for (auto& textureInModel : model_.textures) {
+    QImage defaultImage(1, 1,  QImage::Format_RGB32);
+    defaultImage.fill(QColor(255,255,255,255));
+    _defaultTexture = std::make_shared<QOpenGLTexture>(defaultImage);
+    _defaultTexture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+    _defaultTexture->setWrapMode(QOpenGLTexture::WrapMode::Repeat);
+
+    for (const auto& textureInModel : model_.textures) {
         tinygltf::Image &image = model_.images[textureInModel.source];
 
         QOpenGLTexture* texture;
@@ -231,14 +235,13 @@ std::shared_ptr<SceneNode> LoadModelIterator::createAndBindRenderersForMesh(tiny
                 static_cast<float>(material.pbrMetallicRoughness.baseColorFactor[2])
             };
 
-            // TODO: если нет текстуры, то лучше юзать какую-нибудь заранее заготовленную текстуру размером аля 1 белый пиксель, чтобы в шейдере не делать тернарник
             textures.push_back({
                 TextureType::Diffuse,
                 {
                     diffuseColor,
                     material.pbrMetallicRoughness.baseColorTexture.index > -1
                     ? opengGLTextures_[material.pbrMetallicRoughness.baseColorTexture.index]
-                    : nullptr,
+                    : _defaultTexture,
                 }
             });
         }

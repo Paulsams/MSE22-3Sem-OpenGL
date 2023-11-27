@@ -34,6 +34,8 @@ private:
     const std::shared_ptr<QOpenGLShaderProgram> &program_;
     tinygltf::Model &model_;
     std::unordered_map<int, tinygltf::BufferView> bufferViews_;
-    // TODO: QOpenGLTexturePrivate::destroy() called without a current context. Texture has not been destroyed.
     std::vector<std::shared_ptr<QOpenGLTexture>> opengGLTextures_;
+
+    // TODO: нужно не каждый раз её создавать, а шарить между всеми, поэтому нужно делать вместе с системой мешей и общими буферами
+    std::shared_ptr<QOpenGLTexture> _defaultTexture;
 };
