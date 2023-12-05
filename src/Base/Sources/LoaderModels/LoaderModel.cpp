@@ -26,12 +26,12 @@ std::unique_ptr<tinygltf::Model> LoaderModel::loadModel(const std::filesystem::p
     std::string err;
     std::string warn;
 
-    const std::string filename = path.string();
+    const std::string pathInStr = path.string();
     bool result;
     if (path.extension() == ".gltf") {
-        result = loader.LoadASCIIFromFile(&model, &err, &warn, filename);
+        result = loader.LoadASCIIFromFile(&model, &err, &warn, pathInStr);
     } else {
-        result = loader.LoadBinaryFromFile(&model, &err, &warn, filename);
+        result = loader.LoadBinaryFromFile(&model, &err, &warn, pathInStr);
     }
 
     if (!warn.empty())
@@ -42,10 +42,10 @@ std::unique_ptr<tinygltf::Model> LoaderModel::loadModel(const std::filesystem::p
 
     // TODO: более понятные ошибки. Например не нашёлся файл
     if (!result) {
-        std::cout << "Failed to load glTF: " << filename << std::endl;
+        std::cout << "Failed to load glTF: " << pathInStr << std::endl;
         return nullptr;
     }
 
-    std::cout << "Loaded glTF: " << filename << std::endl;
+    std::cout << "Loaded glTF: " << pathInStr << std::endl;
     return std::make_unique<tinygltf::Model>(model);
 }

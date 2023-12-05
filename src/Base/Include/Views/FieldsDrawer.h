@@ -40,9 +40,11 @@ public:
     void setBackground(const QColor&color);
     void setFontSize(int fontSize);
 
+    QPushButton* addButton(const std::string& title, const std::string& textOnButton, const std::function<void()>& changedValueCallback);
+
     SliderInfo addSlider(
-        const std::string&title, int startValue, int min, int max,
-        const std::optional<const std::function<void(int)>>&changedValueCallback = std::nullopt
+        const std::string& title, int startValue, int min, int max,
+        const std::optional<const std::function<void(int)>>& changedValueCallback = std::nullopt
     );
 
     SpinxBoxInFloatInfo addSpinBox(
@@ -80,10 +82,6 @@ public:
     ColorPickerFieldInfo addColorPicker(
         const std::string&title, QColor* colorPtr
     );
-
-    // ColorPickerFieldInfo addColorPicker(
-    //     const std::string&title, QVector3D* colorPtr
-    // );
 
     Vector3FieldInfo addVector3Field(
         const std::string&title, const QVector3D&startValue, float step,

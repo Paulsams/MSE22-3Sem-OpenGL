@@ -4,9 +4,11 @@
 #include "Transform.h"
 #include "BaseComponent.h"
 
-class SceneNode {
+class SceneNode : public QObject {
+	Q_OBJECT
+
 public:
-    ~SceneNode();
+    ~SceneNode() override;
 
     void addChild(const std::shared_ptr<SceneNode> &child);
 
@@ -38,6 +40,9 @@ public:
     [[nodiscard]] static std::shared_ptr<SceneNode> create(const std::string &name = "") {
         return std::shared_ptr<SceneNode>(new SceneNode(name));
     }
+
+signals:
+	void addedChild(SceneNode&, SceneNode& child);
 
 private:
     explicit SceneNode(std::string name = "");

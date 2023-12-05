@@ -58,7 +58,7 @@ std::shared_ptr<SceneNode> LoadModelIterator::create(const std::filesystem::path
         initBufferForModelNodes(model_.nodes[node]);
     }
 
-    auto rootNode = SceneNode::create("Root");
+    auto rootNode = SceneNode::create(path.filename().replace_extension().string() + " Root");
     for (int node: scene.nodes)
         rootNode->addChild(createAndBindRenderersForModelNodes(model_.nodes[node]));
 

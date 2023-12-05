@@ -8,7 +8,7 @@
 #include <QSizePolicy>
 #include <QHeaderView>
 
-SceneHierarchyView::SceneHierarchyView(InspectorView&inspector, QWidget* parent)
+SceneHierarchyView::SceneHierarchyView(InspectorView& inspector, QWidget* parent)
         : QWidget(parent), inspector_(inspector), container_(new QVBoxLayout(this)) {
     // TODO: хардкод цвета
     setStyleSheet("background-color: rgba(155, 155, 155, 200);");
@@ -23,14 +23,21 @@ SceneHierarchyView::SceneHierarchyView(InspectorView&inspector, QWidget* parent)
             this, &SceneHierarchyView::clicked);
 }
 
-void SceneHierarchyView::fill(Scene&scene) {
+void SceneHierarchyView::fill(Scene& scene) {
     QStandardItem* sceneItem = model_.invisibleRootItem();
     model_.setHorizontalHeaderLabels(QStringList("Test Scene"));
     fillInternal(scene.getRootNode(), sceneItem);
 }
 
-void SceneHierarchyView::fillInternal(SceneNode&sceneNode, QStandardItem* parentItem) {
-    sceneNode.iterateChildren([this, parentItem](SceneNode&child) {
+void SceneHierarchyView::fillInternal(SceneNode& sceneNode, QStandardItem* parentItem) {
+	QObject::connect(&sceneNode, &SceneNode::addedChild, this, [this, parentItem](SceneNode&, SceneNode& child) {
+		auto* childItem = new ItemInHierarchy(child);
+		parentItem->appendRow(childItem);
+
+		fillInternal(child, childItem);
+	});
+
+    sceneNode.iterateChildren([this, parentItem](SceneNode& child) {
         auto* childItem = new ItemInHierarchy(child);
         parentItem->appendRow(childItem);
 
@@ -38,7 +45,7 @@ void SceneHierarchyView::fillInternal(SceneNode&sceneNode, QStandardItem* parent
     });
 }
 
-void SceneHierarchyView::clicked(const QModelIndex&index) const {
+void SceneHierarchyView::clicked(const QModelIndex& index) const {
     auto* item = dynamic_cast<ItemInHierarchy *>(model_.itemFromIndex(index));
     inspector_.clear();
     inspector_.fillComponents(item->getNode());

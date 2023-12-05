@@ -13,11 +13,11 @@ public:
 
     void fill(Scene& scene);
 
+signals:
+	void clicked(const QModelIndex &index) const;
+
 private:
     void fillInternal(SceneNode& sceneNode, QStandardItem* parentItem);
-
-signals:
-    void clicked(const QModelIndex &index) const;
 
     InspectorView& inspector_;
     QLayout *container_;

@@ -22,6 +22,21 @@ void FieldsDrawer::setFontSize(const int fontSize) {
     updateStyleSheet();
 }
 
+QPushButton* FieldsDrawer::addButton(const std::string& title, const std::string& textOnButton, const std::function<void()>& changedValueCallback) {
+	auto layout = new QHBoxLayout();
+	layout->setGeometry({0, 0, 150, heightField});
+
+	auto label = createLabel(title);
+	auto buttonField = new QPushButton(QString(textOnButton.c_str()));
+	QWidget::connect(buttonField, &QPushButton::clicked, this, changedValueCallback);
+
+	layout->addWidget(label);
+	layout->addWidget(buttonField);
+	container_->addLayout(layout, 0);
+
+	return buttonField;
+}
+
 SliderInfo FieldsDrawer::addSlider(const std::string&title, const int startValue, const int min, const int max,
                                    const std::optional<const std::function<void(int)>>&changedValueCallback) {
     auto layout = new QHBoxLayout();

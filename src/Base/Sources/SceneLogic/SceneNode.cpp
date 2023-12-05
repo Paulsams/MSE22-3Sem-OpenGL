@@ -7,6 +7,7 @@ SceneNode::SceneNode(std::string name)
 
 void SceneNode::addChild(const std::shared_ptr<SceneNode> &child) {
     children_.push_back(child);
+	emit addedChild(*this, *child);
 }
 
 void SceneNode::addComponent(std::unique_ptr<BaseComponent> component) {

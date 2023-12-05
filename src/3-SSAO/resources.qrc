@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Models/Chess.glb</file>
+        <file>Models/Sphere.glb</file>
+        <file>Models/Two models.glb</file>
+    </qresource>
+    <qresource prefix="/">
+    </qresource>
+    <qresource prefix="/">
+        <file>Shaders/deferred.frag</file>
+        <file>Shaders/deferred.vert</file>
+        <file>Shaders/light.vert</file>
+        <file>Shaders/PointLight.frag</file>
+    </qresource>
+</RCC>
