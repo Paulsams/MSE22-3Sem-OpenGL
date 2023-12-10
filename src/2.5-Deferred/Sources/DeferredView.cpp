@@ -1,4 +1,4 @@
-#include "SSAOView.h"
+#include "DeferredView.h"
 
 #include "Base/Include/SceneLogic/Scene.h"
 #include "Base/Include/SceneLogic/SceneNode.h"
@@ -12,7 +12,7 @@
 
 #include <memory>
 
-SSAOView::SSAOView()
+DeferredView::DeferredView()
     : scene_(std::make_unique<Scene>()),
       debugWindow_(new FieldsDrawer(160)),
       inspector_(new InspectorView(this)),
@@ -45,7 +45,7 @@ SSAOView::SSAOView()
     });
 }
 
-void SSAOView::onInit() {
+void DeferredView::onInit() {
     geometryProgram_->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/Shaders/deferred.vert");
     geometryProgram_->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/Shaders/deferred.frag");
 
@@ -120,7 +120,7 @@ void SSAOView::onInit() {
     time_.reset();
 }
 
-void SSAOView::onRender() {
+void DeferredView::onRender() {
     if (isNeedChangeSamples_) {
         countSamplesFromGBuffer_ = countSamplesFromGBuffer_ == 0 ? 16 : 0;
         gBuffer_.resize(size().width(), size().height(), countSamplesFromGBuffer_);
@@ -204,7 +204,7 @@ void SSAOView::onRender() {
         update();
 }
 
-void SSAOView::onResize(const size_t width, const size_t height) {
+void DeferredView::onResize(const size_t width, const size_t height) {
 	const int widthI = static_cast<int>(width);
 	const int heightI = static_cast<int>(height);
 

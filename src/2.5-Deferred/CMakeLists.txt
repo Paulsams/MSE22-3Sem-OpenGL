@@ -9,7 +9,7 @@ file(INSTALL Models DESTINATION ./)
 
 set(SOURCES
         Sources/main.cpp
-        Sources/SSAOView.cpp
+        Sources/DeferredView.cpp
         Sources/GBuffer.cpp
 
         Sources/Lights/PointLightsContainer.cpp
@@ -19,7 +19,7 @@ set(SOURCES
 )
 
 set(INCLUDE
-        Include/SSAOView.h
+        Include/DeferredView.h
         Include/GBuffer.h
 
         Include/Lights/BaseLightsContainer.h

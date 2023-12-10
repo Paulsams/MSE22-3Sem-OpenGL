@@ -1,6 +1,6 @@
 #include <QApplication>
 
-#include "SSAOView.h"
+#include "DeferredView.h"
 #include "Base/Include/Utils/InputHandler.h"
 
 namespace
@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
     auto inputHandler = InputHandler::createInstance();
 
 	// Now create window.
-	SSAOView window;
+	DeferredView window;
 	window.resize(1280, 950);
 	window.show();
 

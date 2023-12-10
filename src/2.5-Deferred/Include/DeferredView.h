@@ -19,9 +19,9 @@
 
 class Renderer;
 
-class SSAOView final : public fgl::GLWidget {
+class DeferredView final : public fgl::GLWidget {
 public:
-    SSAOView();
+    DeferredView();
 
 protected:
     void onInit() override;
