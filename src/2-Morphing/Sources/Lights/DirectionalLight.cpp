@@ -2,8 +2,6 @@
 
 #include "Base/Include/Views/FieldsDrawer.h"
 #include "Base/Include/SceneLogic/SceneNode.h"
-#include "3-SSAO/Include/Lights/DirectionalLight.h"
-
 
 void DirectionalLight::setAllData(const QVector3D& color, const float ambientStrength) {
     uniformData_.color = color;
