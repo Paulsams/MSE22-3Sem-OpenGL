@@ -9,7 +9,14 @@
     <qresource prefix="/">
         <file>Shaders/deferred.frag</file>
         <file>Shaders/deferred.vert</file>
+
         <file>Shaders/light.vert</file>
-        <file>Shaders/PointLight.frag</file>
+        <file>Shaders/pointLight.frag</file>
+
+        <file>Shaders/directionalLight.vert</file>
+        <file>Shaders/directionalLight.frag</file>
+
+        <file>Shaders/null.vert</file>
+        <file>Shaders/null.frag</file>
     </qresource>
 </RCC>

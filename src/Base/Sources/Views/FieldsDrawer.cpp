@@ -72,6 +72,13 @@ SliderInfo FieldsDrawer::addSlider(const std::string&title, const int startValue
     return {slider};
 }
 
+
+SpinxBoxInFloatInfo FieldsDrawer::addSpinBox(const std::string &title, float *valuePtr, float min, float max, float step) {
+    return addSpinBox(title, *valuePtr, min, max, step, [valuePtr](float newValue) {
+        *valuePtr = newValue;
+    });
+}
+
 SpinxBoxInFloatInfo FieldsDrawer::addSpinBox(const std::string& title, float startValue, float min, float max, float step,
         const std::optional<const std::function<void(float)>>& changedValueCallback) {
     auto layout = new QHBoxLayout();
@@ -192,7 +199,7 @@ ColorPickerFieldInfo FieldsDrawer::addColorPicker(
     return {colorPickerButton};
 }
 
-ColorPickerFieldInfo FieldsDrawer::addColorPicker(const std::string& title, const QVector3D* updatedColor,
+ColorPickerFieldInfo FieldsDrawer::addColorPicker(const std::string& title, QVector3D* updatedColor,
     const std::optional<const std::function<void(QVector3D)>>& changedValueCallback) {
 
     auto getterColor = [updatedColor] {
@@ -214,7 +221,13 @@ ColorPickerFieldInfo FieldsDrawer::addColorPicker(const std::string& title, cons
             });
         });
     } else {
-        return addColorPicker(title, getterColor);
+        return addColorPicker(title, getterColor, [updatedColor](const QColor& color) {
+            *updatedColor = QVector3D {
+                    static_cast<float>(color.redF()),
+                    static_cast<float>(color.greenF()),
+                    static_cast<float>(color.blueF())
+            };
+        });
     }
 }
 
@@ -261,7 +274,7 @@ Vector3FieldInfo FieldsDrawer::addVector3Field(
     auto* yField = new QDoubleSpinBox();
     yField->setPrefix("y: ");
     yField->setRange(-1000.0f, 1000.0f);
-    xField->setSingleStep(step);
+    yField->setSingleStep(step);
     yField->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     yField->setValue(startValue.y());
     yField->setFixedHeight(heightField);
@@ -269,7 +282,7 @@ Vector3FieldInfo FieldsDrawer::addVector3Field(
     auto* zField = new QDoubleSpinBox();
     zField->setPrefix("z: ");
     zField->setRange(-1000.0f, 1000.0f);
-    xField->setSingleStep(step);
+    zField->setSingleStep(step);
     zField->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     zField->setValue(startValue.z());
     zField->setFixedHeight(heightField);

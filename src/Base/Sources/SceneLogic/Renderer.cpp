@@ -15,8 +15,9 @@ void Renderer::draw(const QMatrix4x4& model, const QMatrix4x4 &viewProjection) {
 
     if (!textures_.empty()) {
         if (textures_[0].second.texture != nullptr) {
-            funcs_.glActiveTexture(GL_TEXTURE0);
+            funcs_.glActiveTexture(GL_TEXTURE5);
             textures_[0].second.texture->bind();
+            program_->setUniformValue("duffuse_tex", 5);
         }
         program_->setUniformValue("duffuse_color", textures_[0].second.color);
     }
@@ -48,6 +49,7 @@ void Renderer::init(const IndicesInfo &indicesInfo,
     }
     bindOpenGLBuffer(indexBuffer_, indexesData);
 
+    // TODO: убрать зависимость от программы
     program_ = programInfoFromObject.program;
     program_->bind();
 

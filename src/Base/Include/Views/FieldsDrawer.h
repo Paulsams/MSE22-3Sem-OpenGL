@@ -48,6 +48,10 @@ public:
     );
 
     SpinxBoxInFloatInfo addSpinBox(
+            const std::string&title, float* valuePtr, float min, float max, float step
+    );
+
+    SpinxBoxInFloatInfo addSpinBox(
         const std::string&title, float startValue, float min, float max, float step,
         const std::optional<const std::function<void(float)>>&changedValueCallback = std::nullopt
     );
@@ -75,7 +79,7 @@ public:
     );
 
     ColorPickerFieldInfo addColorPicker(
-        const std::string&title, const QVector3D* updatedColor,
+        const std::string&title, QVector3D* updatedColor,
         const std::optional<const std::function<void(QVector3D)>>&changedValueCallback = std::nullopt
     );
 

@@ -94,7 +94,7 @@ void MorphingView::onRender() {
     glClearColor(clearColor_.redF(), clearColor_.greenF(), clearColor_.blueF(), clearColor_.alphaF());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    Camera&camera = cameraView_.getCamera();
+    Camera& camera = cameraView_.getCamera();
     camera.move(cameraView_.getDirectionMoveCamera() * static_cast<float>(
                     (cameraView_.isInFastSpeedMode() ? speedCameraInShift : speedCamera) * time_.getDeltaTime()));
 

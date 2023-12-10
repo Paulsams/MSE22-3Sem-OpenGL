@@ -10,7 +10,6 @@ public:
 		GBUFFER_TEXTURE_TYPE_POSITION,
 		GBUFFER_TEXTURE_TYPE_DIFFUSE,
 		GBUFFER_TEXTURE_TYPE_NORMAL,
-		GBUFFER_TEXTURE_TYPE_TEXCOORD,
 		GBUFFER_NUM_TEXTURES
 	};
 
@@ -20,13 +19,10 @@ public:
 
 	void resize(size_t width, size_t height, int countSamples = 0);
 
-	void bindForWriting();
-
-	void bindForReading();
-
-    void setReadBuffer(GBUFFER_TEXTURE_TYPE textureType);
-
-	void release();
+    void startFrame();
+    void bindForGeomPass();
+	void bindForStencilPass();
+	void bindForLightPass();
 
 	void blit(
 		QOpenGLFramebufferObject * target, const QRect & targetRect, const QRect & sourceRect,

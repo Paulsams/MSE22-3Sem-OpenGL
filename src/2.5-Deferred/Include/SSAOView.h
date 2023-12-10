@@ -1,6 +1,8 @@
 #pragma once
 
 #include "GBuffer.h"
+#include "Lights/PointLightsContainer.h"
+#include "Lights/DirectionalLightsContainer.h"
 #include "Base/Include/GLWidget.hpp"
 #include "Base/Include/Utils/FrameCounter.h"
 #include "Base/Include/Utils/Time.h"
@@ -13,6 +15,9 @@
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTextureBlitter>
+#include <QOpenGLVertexArrayObject>
+
+class Renderer;
 
 class SSAOView final : public fgl::GLWidget {
 public:
@@ -24,8 +29,6 @@ protected:
     void onResize(size_t width, size_t height) override;
 
 private:
-	void SSAOView::pointLightsPass(const QMatrix4x4 & viewProjection);
-
     std::unique_ptr<Scene> scene_;
 
     FieldsDrawer *debugWindow_;
@@ -33,10 +36,11 @@ private:
     SceneHierarchyView *sceneView_;
     FrameCounter frameCounter_;
 
+    PointLightsContainer* points_;
+    DirectionalLightsContainer* directionals_;
+
     std::shared_ptr<QOpenGLShaderProgram> geometryProgram_;
-    std::shared_ptr<QOpenGLShaderProgram> pointLightsProgram_;
-    std::shared_ptr<QOpenGLShaderProgram> spotLightsProgram_;
-    std::shared_ptr<QOpenGLShaderProgram> direcionalLightsProgram_;
+    std::shared_ptr<QOpenGLShaderProgram> nullForStencilTestProgram_;
 
     CameraView cameraView_;
     Time time_{};
@@ -48,6 +52,6 @@ private:
     int countSamplesFromGBuffer_ = 0;
     bool isNeedChangeSamples_ = false;
 
-	std::shared_ptr<SceneNode> _shpereForPointLight;
-    QOpenGLTextureBlitter blitter_;
+	std::shared_ptr<SceneNode> _sphereForPointLight;
+	std::shared_ptr<SceneNode> _sphereForPointLightForNull;
 };

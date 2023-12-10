@@ -19,9 +19,7 @@ SSAOView::SSAOView()
       sceneView_(new SceneHierarchyView(*inspector_, this)),
       frameCounter_(*debugWindow_, 1000.0f),
       geometryProgram_(std::make_shared<QOpenGLShaderProgram>(this)),
-      pointLightsProgram_(std::make_shared<QOpenGLShaderProgram>(this)),
-      spotLightsProgram_(std::make_shared<QOpenGLShaderProgram>(this)),
-      direcionalLightsProgram_(std::make_shared<QOpenGLShaderProgram>(this)),
+      nullForStencilTestProgram_(std::make_shared<QOpenGLShaderProgram>(this)),
       cameraView_(Camera{0.0f, 60.0f, 0.1f, 100.0f}, this),
       gBuffer_(*this) {
     QGridLayout grid;
@@ -48,16 +46,14 @@ SSAOView::SSAOView()
 }
 
 void SSAOView::onInit() {
-    blitter_.create();
-
     geometryProgram_->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/Shaders/deferred.vert");
     geometryProgram_->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/Shaders/deferred.frag");
-    geometryProgram_->link();
 
-	pointLightsProgram_->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/Shaders/light.vert");
-	pointLightsProgram_->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/Shaders/PointLight.frag");
+    nullForStencilTestProgram_->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/Shaders/null.vert");
+    nullForStencilTestProgram_->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/Shaders/null.frag");
 
     // Bind attributes
+    geometryProgram_->link();
     geometryProgram_->bind();
 
     // if (const auto nodeWithLoadModel = LoaderModel::load("../Models/Two Models.glb", *this, program_)) {
@@ -73,14 +69,43 @@ void SSAOView::onInit() {
 
     sceneView_->fill(*scene_);
 
-    // Еnable depth test and face culling
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glDisable(GL_MULTISAMPLE);
+    const auto containerForPointLightsNode = SceneNode::create("Point Lights");
+    scene_->getRootNode().addChild(containerForPointLightsNode);
+
+    points_ = new PointLightsContainer(nullForStencilTestProgram_, this);
+    containerForPointLightsNode->addComponent(std::unique_ptr<PointLightsContainer>(points_));
+
+    PointLight& firstPoint = points_->addLight();
+    firstPoint.setAllData(
+            10.0f,
+            QVector3D(0.0f, 0.0f, 0.0f),
+            QVector3D(1.0f, 1.0f, 1.0f),
+            QVector3D(1.0f, 1.0f, 1.0f),
+            1.0f,
+            0.4f,
+            0.6f
+    );
+    firstPoint.getNode().getTransform().setPosition(0.0f, 6.0f, 0.0f);
+
+    const auto containerForDirectionalLightsNode = SceneNode::create("Directional Lights");
+    scene_->getRootNode().addChild(containerForDirectionalLightsNode);
+
+    directionals_ = new DirectionalLightsContainer(this);
+    containerForDirectionalLightsNode->addComponent(std::unique_ptr<DirectionalLightsContainer>(directionals_));
+
+    DirectionalLight& directionalLight = directionals_->addLight();
+    directionalLight.setAllData(
+            QVector3D(0.7f, 0.7f, 0.7f),
+            QVector3D(0.1f, 0.6f, 0.9f),
+            QVector3D(1.0f, 1.0f, 1.0f)
+    );
+    directionalLight.getNode().getTransform().setRotation(QQuaternion::fromAxisAndAngle(
+            QVector3D(1.0f, 0.0f, 0.0f),
+            45.0f
+    ));
 
     // Clear all FBO buffers
-    glClearColor(clearColor_.redF(), clearColor_.greenF(), clearColor_.blueF(), clearColor_.alphaF());
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     debugWindow_->addButton("Load Model", "Open Explorer", [this]() {
     	QString filePath = QFileDialog::getOpenFileName(this);
@@ -92,9 +117,6 @@ void SSAOView::onInit() {
 		}
     });
 
-	pointLightsProgram_->link();
-	_shpereForPointLight = LoaderModel::load("../Models/Sphere.glb", *this, pointLightsProgram_);
-
     time_.reset();
 }
 
@@ -105,15 +127,22 @@ void SSAOView::onRender() {
         isNeedChangeSamples_ = false;
     }
 
-	gBuffer_.bindForWriting();
+    gBuffer_.startFrame();
+
+	gBuffer_.bindForGeomPass();
 
     // TODO: сделать камеру компонентом и вынести её движение в ещё компонент
     constexpr double speedCamera = 1.0f;
     constexpr double speedCameraInShift = 5.0f;
 
+    // Only the geometry pass updates the depth buffer
+    glDepthMask(GL_TRUE);
+
     // Clear buffers
-    glClearColor(clearColor_.redF(), clearColor_.greenF(), clearColor_.blueF(), clearColor_.alphaF());
+//    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_DEPTH_TEST);
 
     time_.update();
 
@@ -140,48 +169,33 @@ void SSAOView::onRender() {
     // Draw
     scene_->iterDraw(viewProjection);
 
+    // When we get here the depth buffer is already populated and the stencil pass
+    // depends on it, but it does not write to it.
+    glDepthMask(GL_FALSE);
+
     // Release VAO and shader program
     geometryProgram_->release();
-	gBuffer_.release();
 
-    gBuffer_.bindForReading();
+//    glClearColor(clearColor_.redF(), clearColor_.greenF(), clearColor_.blueF(), clearColor_.alphaF());
+//    glClear(GL_COLOR_BUFFER_BIT);
+
+    glEnable(GL_STENCIL_TEST);
+    points_->executeStencilAndLightPasses(viewProjection, viewPosition, gBuffer_, size());
+
+    // The directional light does not need a stencil test because its volume
+    // is unlimited and the final pass simply copies the texture.
+    glDisable(GL_STENCIL_TEST);
+    directionals_->executeLightPasses( viewPosition, gBuffer_, size());
+
     auto windowRect = QRect({0, 0}, size());
+    gBuffer_.blit(
+        nullptr, windowRect,
+        windowRect,
+        3,
+        0, GL_COLOR_BUFFER_BIT, GL_LINEAR
+    );
 
-    // TODO: лучше хотя бы бульку, что ли?
-    if (countSamplesFromGBuffer_ == 0) {
-
-        int halfWidth = windowRect.size().width() / 2;
-        int halfHeight = windowRect.size().height() / 2;
-        auto rect = QRect({0, 0}, QSize(halfWidth, halfHeight));
-
-        gBuffer_.blit(nullptr, rect,
-                      windowRect,
-                      GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
-
-        gBuffer_.blit(nullptr, rect.translated(halfWidth, 0),
-                      windowRect,
-                      GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
-
-        gBuffer_.blit(nullptr, rect.translated(0, halfHeight),
-                      windowRect,
-                      GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
-
-        gBuffer_.blit(nullptr, rect.translated(halfWidth, halfHeight),
-                      windowRect,
-                      GBuffer::GBUFFER_TEXTURE_TYPE_TEXCOORD);
-    } else {
-        gBuffer_.blit(nullptr, windowRect, windowRect, GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
-    }
-
-    gBuffer_.release();
-
-	// glEnable(GL_BLEND);
-	// glBlendEquation(GL_FUNC_ADD);
-	// glBlendFunc(GL_ONE, GL_ONE);
-	//
-	// pointLightsPass(viewProjection);
-
-	// glClear(GL_COLOR_BUFFER_BIT);
+    gBuffer_.getFBO().release();
 
     frameCounter_.update();
 
@@ -190,36 +204,16 @@ void SSAOView::onRender() {
         update();
 }
 
-void SSAOView::pointLightsPass(const QMatrix4x4& viewProjection) {
-	pointLightsProgram_->link();
-	pointLightsProgram_->bind();
-
-	pointLightsProgram_->setUniformValue("screen_size", size());
-	// auto textures = gBuffer->textures();
-	// glActiveTexture(GL_TEXTURE0 + 0);
-	// glBindTexture(GL_TEXTURE_2D, textures[0]);
-	// glActiveTexture(GL_TEXTURE0 + 1);
-	// glBindTexture(GL_TEXTURE_2D, textures[1]);
-
-	auto modelMatrix = _shpereForPointLight->getTransform().getModelMatrix();
-	modelMatrix.scale(5.0f, 5.0f, 5.0f);
-
-	// TODO: костыль -- подумать, что может сделать сферу дефолтной моделью
-	_shpereForPointLight->getChildren()[0]->getChildren()[0]->getChildren()[0]->getRenderer()->draw(modelMatrix, viewProjection);
-
-	pointLightsProgram_->release();
-}
-
 void SSAOView::onResize(const size_t width, const size_t height) {
-	const int witdhI = static_cast<int>(width);
+	const int widthI = static_cast<int>(width);
 	const int heightI = static_cast<int>(height);
 
     // Configure viewport
-    glViewport(0, 0, witdhI, heightI);
+    glViewport(0, 0, widthI, heightI);
 	gBuffer_.resize(width, height, countSamplesFromGBuffer_);
 
     cameraView_.getCamera().setAspect(static_cast<float>(width) / static_cast<float>(height));
     // TODO: хардкод размеров окон для значений
-    sceneView_->setGeometry(witdhI - 300, 0, 300, 500);
-    inspector_->setGeometry(witdhI - 450, heightI - 400, 450, 400);
+    sceneView_->setGeometry(widthI - 300, 0, 300, 500);
+    inspector_->setGeometry(widthI - 450, heightI - 400, 450, 400);
 }
