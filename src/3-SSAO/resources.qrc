@@ -1,0 +1,27 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Models/BrainStem.glb</file>
+        <file>Models/Chess.glb</file>
+        <file>Models/Sphere.glb</file>
+        <file>Models/Two models.glb</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>Shaders/deferred.frag</file>
+        <file>Shaders/deferred.vert</file>
+
+        <file>Shaders/ssao.frag</file>
+        <file>Shaders/ssao.vert</file>
+
+        <file>Shaders/blur.frag</file>
+        <file>Shaders/blur.vert</file>
+
+        <file>Shaders/light.vert</file>
+        <file>Shaders/pointLight.frag</file>
+
+        <file>Shaders/directionalLight.vert</file>
+        <file>Shaders/directionalLight.frag</file>
+
+        <file>Shaders/null.vert</file>
+        <file>Shaders/null.frag</file>
+    </qresource>
+</RCC>

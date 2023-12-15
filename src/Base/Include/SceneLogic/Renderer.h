@@ -5,6 +5,7 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLFunctions>
 #include <QOpenGLTexture>
+#include <optional>
 
 struct BufferData {
     const void* data;
@@ -47,12 +48,23 @@ struct IndicesInfo {
     GLenum primitiveMode;
     GLsizei count;
     GLenum componentType;
-    const GLvoid* indices;
+    const GLvoid* bufferOffset;
 
     IndicesInfo() = delete;
 
-    IndicesInfo(GLenum primitiveMode, GLsizei count, GLenum componentType, const void* indices)
-        : primitiveMode(primitiveMode), count(count), componentType(componentType), indices(indices) {
+    IndicesInfo(GLenum primitiveMode, GLsizei count, GLenum componentType, const void* bufferOffset)
+        : primitiveMode(primitiveMode), count(count), componentType(componentType), bufferOffset(bufferOffset) {
+    }
+};
+
+struct IndicesBuffer {
+    IndicesInfo info;
+    BufferData buffer;
+
+    IndicesBuffer() = delete;
+
+    IndicesBuffer(IndicesInfo&& info, BufferData&& buffer)
+        : info(std::move(info)), buffer(std::move(buffer)) {
     }
 };
 
@@ -75,27 +87,36 @@ class Renderer {
 public:
     using TexturesContainer = std::vector<std::pair<TextureType, TextureMapperInfo>>;
 
-    void init(const IndicesInfo& indicesInfo,
-              const BufferData& indexesData,
+    void init(GLenum primitiveMode,
+              int countVertices,
               ProgramInfoFromObject& programInfoFromObject,
+              std::optional<IndicesBuffer> indicesBuffer,
               const TexturesContainer&& textures);
 
-    void draw(const QMatrix4x4& model, const QMatrix4x4& viewProjection);
+    void draw(const QMatrix4x4& model, const QMatrix4x4& view, const QMatrix4x4& viewProjection);
 
     explicit Renderer(QOpenGLFunctions&funcs);
 
 private:
+    struct IndexBufferContainer {
+        IndicesInfo info;
+        QOpenGLBuffer buffer{QOpenGLBuffer::Type::IndexBuffer};
+    };
+
     static void bindOpenGLBuffer(QOpenGLBuffer&buffer, const BufferData&bufferData);
 
     int mvpUniformLocation_;
     int modelUniformLocation_;
     int transposeInverseModelUniformLocation_;
 
+    GLenum primitiveMode_;
+
     TexturesContainer textures_;
-    IndicesInfo indicesInfo_{0, 0, 0, nullptr};
+    std::optional<IndexBufferContainer> indicesContainer_;
     QOpenGLFunctions&funcs_;
     QOpenGLVertexArrayObject vao_;
     std::shared_ptr<QOpenGLShaderProgram> program_{};
+
+    int countVertices_;
     std::vector<QOpenGLBuffer> vertexBuffers_;
-    QOpenGLBuffer indexBuffer_{QOpenGLBuffer::Type::IndexBuffer};
 };

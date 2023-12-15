@@ -1,16 +1,18 @@
 #include "DeferredView.h"
 
-#include "Base/Include/SceneLogic/Scene.h"
-#include "Base/Include/SceneLogic/SceneNode.h"
-#include "Base/Include/LoaderModels/LoaderModel.h"
-#include "Base/Include/Views/FieldsDrawer.h"
-#include "Base/Include/Utils/ToggleSwitch.h"
-#include "Base/Include/Utils/InputHandler.h"
+#include "SceneLogic/Scene.h"
+#include "SceneLogic/SceneNode.h"
+#include "LoaderModels/LoaderModel.h"
+#include "Views/FieldsDrawer.h"
+#include "Utils/ToggleSwitch.h"
+#include "Utils/InputHandler.h"
 
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 
 #include <memory>
+
+using namespace Deferred;
 
 DeferredView::DeferredView()
     : scene_(std::make_unique<Scene>()),
@@ -72,7 +74,13 @@ void DeferredView::onInit() {
     const auto containerForPointLightsNode = SceneNode::create("Point Lights");
     scene_->getRootNode().addChild(containerForPointLightsNode);
 
-    points_ = new PointLightsContainer(nullForStencilTestProgram_, this);
+    std::vector<std::pair<const char*, int>> texturesBind = {
+            { "g_buffer_position", GBuffer::GBUFFER_TEXTURE_TYPE_POSITION },
+            { "g_buffer_color", GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE },
+            { "g_buffer_normal", GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL },
+    };
+
+    points_ = new PointLightsContainer(texturesBind, nullForStencilTestProgram_, this);
     containerForPointLightsNode->addComponent(std::unique_ptr<PointLightsContainer>(points_));
 
     PointLight& firstPoint = points_->addLight();
@@ -90,7 +98,7 @@ void DeferredView::onInit() {
     const auto containerForDirectionalLightsNode = SceneNode::create("Directional Lights");
     scene_->getRootNode().addChild(containerForDirectionalLightsNode);
 
-    directionals_ = new DirectionalLightsContainer(this);
+    directionals_ = new DirectionalLightsContainer(texturesBind, this);
     containerForDirectionalLightsNode->addComponent(std::unique_ptr<DirectionalLightsContainer>(directionals_));
 
     DirectionalLight& directionalLight = directionals_->addLight();
@@ -167,7 +175,7 @@ void DeferredView::onRender() {
     geometryProgram_->setUniformValue("view_position", viewPosition);
 
     // Draw
-    scene_->iterDraw(viewProjection);
+    scene_->iterDraw(camera.getViewMatrix(), viewProjection);
 
     // When we get here the depth buffer is already populated and the stencil pass
     // depends on it, but it does not write to it.
@@ -180,12 +188,12 @@ void DeferredView::onRender() {
 //    glClear(GL_COLOR_BUFFER_BIT);
 
     glEnable(GL_STENCIL_TEST);
-    points_->executeStencilAndLightPasses(viewProjection, viewPosition, gBuffer_, size());
+    points_->executeStencilAndLightPasses(camera.getViewMatrix(), viewProjection, viewPosition, gBuffer_, size());
 
     // The directional light does not need a stencil test because its volume
     // is unlimited and the final pass simply copies the texture.
     glDisable(GL_STENCIL_TEST);
-    directionals_->executeLightPasses( viewPosition, gBuffer_, size());
+    directionals_->executeLightPasses(viewPosition, gBuffer_, size());
 
     auto windowRect = QRect({0, 0}, size());
     gBuffer_.blit(

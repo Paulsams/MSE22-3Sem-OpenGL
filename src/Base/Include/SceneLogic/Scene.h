@@ -11,16 +11,17 @@ public:
 
     void iterUpdate(float deltaTime);
 
-    void iterDraw(const QMatrix4x4 &viewProjection);
+    void iterDraw(const QMatrix4x4& view, const QMatrix4x4& viewProjection);
 
     SceneNode &getRootNode() { return *rootNode_; }
 
 private:
-    void iterUpdateInternal(SceneNode &node, float deltaTime);
+    void iterUpdateInternal(SceneNode& node, float deltaTime);
 
-    void iterDrawInternal(SceneNode &node,
-                          const QMatrix4x4 &modelMatrix,
-                          const QMatrix4x4 &viewProjection);
+    void iterDrawInternal(SceneNode& node,
+                          const QMatrix4x4& modelMatrix,
+                          const QMatrix4x4& view,
+                          const QMatrix4x4& viewProjection);
 
     std::shared_ptr<SceneNode> rootNode_;
 };

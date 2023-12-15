@@ -82,8 +82,8 @@ void LoadModelIterator::initBufferForMesh(tinygltf::Mesh&) {
         const tinygltf::BufferView &bufferView = model_.bufferViews[i];
         // TODO: Сделать drawArrays
         if (bufferView.target == 0) {
-            std::cout << "WARN: bufferView.target is zero" << std::endl;
-            continue;  // Unsupported bufferView.
+            std::cout << "WARN: check work drawArrays" << std::endl;
+//            continue;  // Unsupported bufferView.
         }
 
         // TODO: хочется переиспользовать буфера, если они одинаковые юзаются
@@ -134,19 +134,15 @@ std::shared_ptr<SceneNode> LoadModelIterator::createAndBindRenderersForMesh(tiny
     auto rootNodeForPrimitives = SceneNode::create(mesh.name);
 
     // TODO: на модели chess почему-то BlackDrawer и WhiteDrawer входят в друг-друга
-    for (const auto &primitive: mesh.primitives) {
+    for (const auto& primitive: mesh.primitives) {
         // Нет смысла делать отдельными нодами
         std::shared_ptr<SceneNode> nodeForPrimitive = SceneNode::create("Sub Mesh");
         rootNodeForPrimitives->addChild(nodeForPrimitive);
         std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>(funcs_);
 
-        tinygltf::Accessor indexAccessor = model_.accessors[primitive.indices];
-
-        if (indexAccessor.bufferView == -1)
-            continue;
-
         std::vector<std::pair<GLint, AttributeInfo>> attributes;
 
+        int countVertices = -1;
         for (auto &attrib: primitive.attributes) {
             tinygltf::Accessor accessor = model_.accessors[attrib.second];
 
@@ -159,13 +155,16 @@ std::shared_ptr<SceneNode> LoadModelIterator::createAndBindRenderersForMesh(tiny
             int byteStride =
                     accessor.ByteStride(model_.bufferViews[accessor.bufferView]);
 
-            int size = 1;
+            int sizeType = 1;
             if (accessor.type != TINYGLTF_TYPE_SCALAR) {
-                size = accessor.type;
+                sizeType = accessor.type;
             }
 
             int vaa = -1;
-            if (attrib.first == "POSITION") vaa = 0;
+            if (attrib.first == "POSITION") {
+                vaa = 0;
+                countVertices = attributeBufferView.byteLength / tinygltf::GetComponentSizeInBytes(accessor.componentType);
+            }
             if (attrib.first == "NORMAL") vaa = 1;
             if (attrib.first == "TEXCOORD_0") vaa = 2;
             if (vaa > -1) {
@@ -174,7 +173,7 @@ std::shared_ptr<SceneNode> LoadModelIterator::createAndBindRenderersForMesh(tiny
                         AttributeInfo(
                                 accessor.componentType,
                                 static_cast<int>(accessor.byteOffset),
-                                size,
+                                sizeType,
                                 byteStride,
                                 BufferData(&buffer.data.at(0) + attributeBufferView.byteOffset,
                                            static_cast<int>(attributeBufferView.byteLength))
@@ -184,13 +183,10 @@ std::shared_ptr<SceneNode> LoadModelIterator::createAndBindRenderersForMesh(tiny
             }
         }
 
+        if (countVertices == -1)
+            continue;
+
         ProgramInfoFromObject programInfoFromObject(program_, std::move(attributes));
-
-        tinygltf::BufferView &indicesBufferBufferView = bufferViews_.at(indexAccessor.bufferView);
-        const tinygltf::Buffer &indicesBuffer = model_.buffers[indicesBufferBufferView.buffer];
-
-        BufferData indicesData(&indicesBuffer.data.at(0) + indicesBufferBufferView.byteOffset,
-                               static_cast<int>(indicesBufferBufferView.byteLength));
 
         GLenum mode;
         if (primitive.mode == TINYGLTF_MODE_TRIANGLES) {
@@ -210,10 +206,27 @@ std::shared_ptr<SceneNode> LoadModelIterator::createAndBindRenderersForMesh(tiny
             continue;
         }
 
-        IndicesInfo indicesInfo(mode,
+        tinygltf::Accessor indexAccessor = model_.accessors[primitive.indices];
+        std::optional<IndicesBuffer> indicesBufferContainer = std::nullopt;
+        if (indexAccessor.bufferView != -1) {
+            tinygltf::BufferView& indicesBufferBufferView = bufferViews_.at(indexAccessor.bufferView);
+            const tinygltf::Buffer& indicesBuffer = model_.buffers[indicesBufferBufferView.buffer];
+
+            if (indicesBufferBufferView.target != 0) {
+                indicesBufferContainer = IndicesBuffer(
+                        IndicesInfo(
+                                mode,
                                 static_cast<int>(indexAccessor.count),
                                 indexAccessor.componentType,
-                                BUFFER_OFFSET(indexAccessor.byteOffset));
+                                BUFFER_OFFSET(indexAccessor.byteOffset)
+                        ),
+                        BufferData(
+                                &indicesBuffer.data.at(0) + indicesBufferBufferView.byteOffset,
+                                static_cast<int>(indicesBufferBufferView.byteLength)
+                        )
+                );
+            }
+        }
 
         Renderer::TexturesContainer textures;
         if (primitive.material >= 0) {
@@ -246,7 +259,7 @@ std::shared_ptr<SceneNode> LoadModelIterator::createAndBindRenderersForMesh(tiny
             });
         }
 
-        renderer->init(indicesInfo, indicesData, programInfoFromObject, std::move(textures));
+        renderer->init(mode, countVertices, programInfoFromObject, indicesBufferContainer, std::move(textures));
 
         nodeForPrimitive->changeRenderer(std::move(renderer));
     }

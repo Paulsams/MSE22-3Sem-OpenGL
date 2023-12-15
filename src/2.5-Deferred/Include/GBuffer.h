@@ -1,10 +1,12 @@
 #pragma once
 
+#include "Deferred/IGBuffer.h"
+
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLFramebufferObject>
 #include <memory>
 
-class GBuffer {
+class GBuffer : public IGBuffer {
 public:
 	enum GBUFFER_TEXTURE_TYPE {
 		GBUFFER_TEXTURE_TYPE_POSITION,
@@ -21,8 +23,8 @@ public:
 
     void startFrame();
     void bindForGeomPass();
-	void bindForStencilPass();
-	void bindForLightPass();
+	void bindForStencilPass() override;
+	void bindForLightPass() override;
 
 	void blit(
 		QOpenGLFramebufferObject * target, const QRect & targetRect, const QRect & sourceRect,

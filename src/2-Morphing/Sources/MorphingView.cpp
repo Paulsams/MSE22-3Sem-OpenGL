@@ -121,7 +121,7 @@ void MorphingView::onRender() {
     program_->setUniformValue("is_morphing", isMorphing_);
 
     // Draw
-    scene_->iterDraw(viewProjection);
+    scene_->iterDraw(<#initializer#>, viewProjection, 0);
 
     // Release VAO and shader program
     program_->release();

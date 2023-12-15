@@ -8,10 +8,10 @@ void Scene::iterUpdate(float deltaTime) {
     iterUpdateInternal(*rootNode_, deltaTime);
 }
 
-void Scene::iterDraw(const QMatrix4x4 &viewProjection) {
+void Scene::iterDraw(const QMatrix4x4& view, const QMatrix4x4& viewProjection) {
     QMatrix4x4 modelMatrix;
     modelMatrix.setToIdentity();
-    iterDrawInternal(*rootNode_, modelMatrix, viewProjection);
+    iterDrawInternal(*rootNode_, modelMatrix, view, viewProjection);
 }
 
 void Scene::iterUpdateInternal(SceneNode &node, float deltaTime) {
@@ -26,22 +26,21 @@ void Scene::iterUpdateInternal(SceneNode &node, float deltaTime) {
 void Scene::iterDrawInternal(
         SceneNode &node,
         const QMatrix4x4 &modelMatrix,
+        const QMatrix4x4& view,
         const QMatrix4x4 &viewProjection
 ) {
-    static QMatrix4x4 cacheMatrix;
-
-    for (const auto &child: node.getChildren()) {
-        QMatrix4x4& currentModelMatrix = cacheMatrix;
+    for (const auto& child: node.getChildren()) {
+        QMatrix4x4 currentModelMatrix;
         if (node.getTransform().getModelMatrix().isIdentity()) {
-            cacheMatrix = modelMatrix * node.getTransform().getModelMatrix();
+            currentModelMatrix = modelMatrix;
         } else {
-            currentModelMatrix = node.getTransform().getModelMatrix();
+            currentModelMatrix = modelMatrix * node.getTransform().getModelMatrix();
         }
 
         auto renderer = child->getRenderer();
         if (renderer)
-            renderer->draw(currentModelMatrix, viewProjection);
+            renderer->draw(currentModelMatrix, view, viewProjection);
 
-        iterDrawInternal(*child, currentModelMatrix, viewProjection);
+        iterDrawInternal(*child, currentModelMatrix, view, viewProjection);
     }
 }

@@ -5,39 +5,50 @@
 Renderer::Renderer(QOpenGLFunctions &funcs)
         : funcs_(funcs) {}
 
-void Renderer::draw(const QMatrix4x4& model, const QMatrix4x4 &viewProjection) {
+void Renderer::draw(const QMatrix4x4& model, const QMatrix4x4& view, const QMatrix4x4& viewProjection) {
     vao_.bind();
-    indexBuffer_.bind();
+    if (indicesContainer_.has_value())
+        indicesContainer_->buffer.bind();
 
     program_->setUniformValue(mvpUniformLocation_, viewProjection * model);
     program_->setUniformValue(modelUniformLocation_, model);
+    program_->setUniformValue("mv", view * model);
     program_->setUniformValue(transposeInverseModelUniformLocation_, model.inverted().transposed().toGenericMatrix<3, 3>());
 
     if (!textures_.empty()) {
         if (textures_[0].second.texture != nullptr) {
-            funcs_.glActiveTexture(GL_TEXTURE5);
+            funcs_.glActiveTexture(GL_TEXTURE8);
             textures_[0].second.texture->bind();
-            program_->setUniformValue("duffuse_tex", 5);
+            program_->setUniformValue("duffuse_tex", 8);
         }
         program_->setUniformValue("duffuse_color", textures_[0].second.color);
     }
 
-    funcs_.glDrawElements(indicesInfo_.primitiveMode, indicesInfo_.count,
-                          indicesInfo_.componentType, indicesInfo_.indices);
+    if (indicesContainer_.has_value())
+        funcs_.glDrawElements(indicesContainer_->info.primitiveMode, indicesContainer_->info.count,
+                              indicesContainer_->info.componentType, indicesContainer_->info.bufferOffset);
+    else
+        funcs_.glDrawArrays(primitiveMode_, 0, countVertices_);
 
     if (!textures_.empty() && textures_[0].second.texture != nullptr)
         textures_[0].second.texture->release();
 
-    indexBuffer_.release();
+    if (indicesContainer_.has_value())
+        indicesContainer_->buffer.release();
     vao_.release();
 }
 
-void Renderer::init(const IndicesInfo &indicesInfo,
-                    const BufferData &indexesData,
-                    ProgramInfoFromObject &programInfoFromObject,
+void Renderer::init(GLenum primitiveMode,
+                    int countVertices,
+                    ProgramInfoFromObject& programInfoFromObject,
+                    std::optional<IndicesBuffer> indicesBuffer,
                     const TexturesContainer&& textures) {
+    primitiveMode_ = primitiveMode;
+    countVertices_ = countVertices;
+
     textures_ = std::move(textures);
-    indicesInfo_ = indicesInfo;
+    if (indicesBuffer.has_value())
+        indicesContainer_ = { std::move(indicesBuffer->info) };
 
     vao_.create();
     vao_.bind();
@@ -47,7 +58,8 @@ void Renderer::init(const IndicesInfo &indicesInfo,
         bindOpenGLBuffer(vertexBuffer, attributeInfo.bufferData);
         vertexBuffers_.push_back(vertexBuffer);
     }
-    bindOpenGLBuffer(indexBuffer_, indexesData);
+    if (indicesBuffer.has_value())
+        bindOpenGLBuffer(indicesContainer_->buffer, indicesBuffer->buffer);
 
     // TODO: убрать зависимость от программы
     program_ = programInfoFromObject.program;

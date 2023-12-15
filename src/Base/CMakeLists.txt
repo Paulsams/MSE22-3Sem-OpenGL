@@ -2,12 +2,16 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
 set(TARGET_NAME Base)
 
-include_directories(Include)
-include_directories(Sources)
-
 set(INCLUDE
         Include/GLWidget.hpp
         Include/Views/FieldsDrawer.h
+
+        Include/Deferred/IGBuffer.h
+        Include/Deferred/Lights/BaseLightsContainer.h
+        Include/Deferred/Lights/DirectionalLight.h
+        Include/Deferred/Lights/DirectionalLightsContainer.h
+        Include/Deferred/Lights/PointLight.h
+        Include/Deferred/Lights/PointLightsContainer.h
 
         Include/LoaderModels/LoaderModel.h
         Include/LoaderModels/LoadModelIterator.h
@@ -36,6 +40,11 @@ set(INCLUDE
 set(SOURCES
         Sources/GLWidget.cpp
         Sources/Views/FieldsDrawer.cpp
+
+        Sources/Deferred/Lights/DirectionalLight.cpp
+        Sources/Deferred/Lights/DirectionalLightsContainer.cpp
+        Sources/Deferred/Lights/PointLight.cpp
+        Sources/Deferred/Lights/PointLightsContainer.cpp
 
         Sources/LoaderModels/LoaderModel.cpp
         Sources/LoaderModels/LoadModelIterator.cpp
@@ -71,3 +80,6 @@ target_link_libraries(${TARGET_NAME}
 )
 
 add_library(FGL::Base ALIAS Base)
+
+target_include_directories(${TARGET_NAME} PUBLIC Include)
+target_include_directories(${TARGET_NAME} PUBLIC Sources)

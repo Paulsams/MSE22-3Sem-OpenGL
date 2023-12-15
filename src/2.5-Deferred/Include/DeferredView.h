@@ -1,15 +1,15 @@
 #pragma once
 
 #include "GBuffer.h"
-#include "Lights/PointLightsContainer.h"
-#include "Lights/DirectionalLightsContainer.h"
-#include "Base/Include/GLWidget.hpp"
-#include "Base/Include/Utils/FrameCounter.h"
-#include "Base/Include/Utils/Time.h"
-#include "Base/Include/SceneLogic/Camera/CameraView.h"
-#include "Base/Include/Views/InspectorView.h"
-#include "Base/Include/Views/SceneHierarchyView.h"
-#include "Base/Include/SceneLogic/Scene.h"
+#include "Deferred/Lights/PointLightsContainer.h"
+#include "Deferred/Lights/DirectionalLightsContainer.h"
+#include "GLWidget.hpp"
+#include "Utils/FrameCounter.h"
+#include "Utils/Time.h"
+#include "SceneLogic/Camera/CameraView.h"
+#include "Views/InspectorView.h"
+#include "Views/SceneHierarchyView.h"
+#include "SceneLogic/Scene.h"
 
 #include <memory>
 
@@ -36,8 +36,8 @@ private:
     SceneHierarchyView *sceneView_;
     FrameCounter frameCounter_;
 
-    PointLightsContainer* points_;
-    DirectionalLightsContainer* directionals_;
+    Deferred::PointLightsContainer* points_;
+    Deferred::DirectionalLightsContainer* directionals_;
 
     std::shared_ptr<QOpenGLShaderProgram> geometryProgram_;
     std::shared_ptr<QOpenGLShaderProgram> nullForStencilTestProgram_;
@@ -51,7 +51,4 @@ private:
 	GBuffer gBuffer_;
     int countSamplesFromGBuffer_ = 0;
     bool isNeedChangeSamples_ = false;
-
-	std::shared_ptr<SceneNode> _sphereForPointLight;
-	std::shared_ptr<SceneNode> _sphereForPointLightForNull;
 };
