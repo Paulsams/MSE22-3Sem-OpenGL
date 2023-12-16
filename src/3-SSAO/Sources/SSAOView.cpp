@@ -121,8 +121,8 @@ namespace SSAOImpl {
                 -70.0f
         ));
 
-        debugWindow_->addSlider("Kernel Points", &kernelPointsCount_, 1, kernelPoints_.size());
-        debugWindow_->addSpinBox("Sample Radius", &sampleRadiusForSSAO_, 0, 10, 0.05);
+        debugWindow_->addSlider("Kernel Points", &kernelPointsCount_, 1, static_cast<int>(kernelPoints_.size()));
+        debugWindow_->addSpinBox("Sample Radius", &sampleRadiusForSSAO_, 0, 10, 0.05f);
         debugWindow_->addSlider("Count Filter Points", &count_points_for_filter, 4, 32);
         debugWindow_->addSpinBox("Stride Filter Points", &stride_points_for_filter, 1.0f, 16.0f, 1.0f);
 
@@ -216,7 +216,7 @@ namespace SSAOImpl {
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, gBuffer_.getDepthTexture());
-        glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_STENCIL_TEXTURE_MODE, GL_DEPTH_COMPONENT);
+//        glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_STENCIL_TEXTURE_MODE, GL_DEPTH_COMPONENT);
 
         ssaoProgram_->setUniformValue("depth_buffer", 0);
         ssaoProgram_->setUniformValue("sample_radius", sampleRadiusForSSAO_);
