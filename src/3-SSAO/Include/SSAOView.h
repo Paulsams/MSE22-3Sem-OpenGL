@@ -60,7 +60,10 @@ namespace SSAOImpl {
 
         std::vector<QVector3D> kernelPoints_;
         int kernelPointsCount_;
-        float sampleRadiusForSSAO_ = 1.7f;
+        float sampleRadiusForSSAO_ = 0.3f;
+
+        int count_points_for_filter = 4;
+        float stride_points_for_filter = 1;
 
         int indexOutputBuffer_ = GBuffer::GBUFFER_NUM_TEXTURES;
     };

@@ -6,7 +6,10 @@ class Camera {
 public:
     explicit Camera(float aspect, float fov = 60.0f, float zNear = 0.1f, float zFar = 100.0f);
 
+    float getAspect() { return aspect_; }
     void setAspect(float aspect);
+
+    float getFoV() { return fov_; }
 
     QMatrix4x4 getProjectionMatrix() { return projection_; }
 

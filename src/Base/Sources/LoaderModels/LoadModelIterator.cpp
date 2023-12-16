@@ -179,7 +179,8 @@ std::shared_ptr<SceneNode> LoadModelIterator::createAndBindRenderersForMesh(tiny
                                            static_cast<int>(attributeBufferView.byteLength))
                         ));
             } else {
-                std::cout << "vaa missing: " << attrib.first << std::endl;
+                // TODO: в идеале бы в мапу загонять и не писат повторяющиеся в консоль
+//                std::cout << "vaa missing: " << attrib.first << std::endl;
             }
         }
 

@@ -13,7 +13,6 @@ namespace SSAOImpl {
             GBUFFER_TEXTURE_TYPE_POSITION,
             GBUFFER_TEXTURE_TYPE_DIFFUSE,
             GBUFFER_TEXTURE_TYPE_NORMAL,
-            GBUFFER_TEXTURE_TYPE_POSITION_VIEW_SPACE,
             GBUFFER_TEXTURE_TYPE_SSAO,
             GBUFFER_TEXTURE_TYPE_SSAO_WITH_BLUR,
             GBUFFER_NUM_TEXTURES
@@ -24,6 +23,8 @@ namespace SSAOImpl {
         QOpenGLFramebufferObject& getFBO() { return *fbo_; }
 
         void resize(size_t width, size_t height, int countSamples = 0);
+
+        GLint getDepthTexture() { return depthAttachment_; }
 
         void startFrame();
         void bindForGeomPass();
@@ -44,6 +45,8 @@ namespace SSAOImpl {
     private:
         std::unique_ptr<QOpenGLFramebufferObject> fbo_ = nullptr;
         QOpenGLExtraFunctions& funcs_;
+
+        GLuint depthAttachment_;
     };
 } // SSAOImpl
 

@@ -123,6 +123,8 @@ namespace SSAOImpl {
 
         debugWindow_->addSlider("Kernel Points", &kernelPointsCount_, 1, kernelPoints_.size());
         debugWindow_->addSpinBox("Sample Radius", &sampleRadiusForSSAO_, 0, 10, 0.05);
+        debugWindow_->addSlider("Count Filter Points", &count_points_for_filter, 4, 32);
+        debugWindow_->addSpinBox("Stride Filter Points", &stride_points_for_filter, 1.0f, 16.0f, 1.0f);
 
         time_.reset();
     }
@@ -202,24 +204,35 @@ namespace SSAOImpl {
         geometryProgram_->release();
     }
 
+    #define ToRadian(x) ((x) * 3.141593f / 180.0f)
+
     void SSAOView::SSAOPass(const QMatrix4x4& projection) {
         gBuffer_.bindForSSAOPass();
         glCullFace(GL_BACK);
+        glDisable(GL_DEPTH_TEST);
 
         ssaoProgram_->link();
         ssaoProgram_->bind();
 
-        ssaoProgram_->setUniformValue("g_buffer_position", GBuffer::GBUFFER_TEXTURE_TYPE_POSITION_VIEW_SPACE);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, gBuffer_.getDepthTexture());
+        glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_STENCIL_TEXTURE_MODE, GL_DEPTH_COMPONENT);
+
+        ssaoProgram_->setUniformValue("depth_buffer", 0);
         ssaoProgram_->setUniformValue("sample_radius", sampleRadiusForSSAO_);
         ssaoProgram_->setUniformValue("projection", projection);
+        ssaoProgram_->setUniformValue("aspect_ratio", cameraView_.getCamera().getAspect());
+        ssaoProgram_->setUniformValue("tan_half_FoV", tanf(ToRadian(cameraView_.getCamera().getFoV() / 2.0f)));
         ssaoProgram_->setUniformValue("kernel_points_count", kernelPointsCount_);
         ssaoProgram_->setUniformValueArray("kernel_points", kernelPoints_.data(), kernelPointsCount_);
 
         emptyVAO_.bind();
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         emptyVAO_.release();
 
         ssaoProgram_->release();
+
+        glEnable(GL_DEPTH_TEST);
     }
 
     void SSAOView::blurPass() {
@@ -229,6 +242,8 @@ namespace SSAOImpl {
         blurProgram_->bind();
 
         blurProgram_->setUniformValue("g_input_buffer", GBuffer::GBUFFER_TEXTURE_TYPE_SSAO);
+        blurProgram_->setUniformValue("count_points", count_points_for_filter);
+        blurProgram_->setUniformValue("stride_points", stride_points_for_filter);
 
         emptyVAO_.bind();
         glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -246,20 +261,6 @@ namespace SSAOImpl {
         // is unlimited and the final pass simply copies the texture.
         glDisable(GL_STENCIL_TEST);
         directionals_->executeLightPasses(viewPosition, gBuffer_, size());
-    }
-
-    void SSAOView::onResize(size_t width, size_t height) {
-        const int widthI = static_cast<int>(width);
-        const int heightI = static_cast<int>(height);
-
-        // Configure viewport
-        glViewport(0, 0, widthI, heightI);
-        gBuffer_.resize(width, height, 0);
-
-        cameraView_.getCamera().setAspect(static_cast<float>(width) / static_cast<float>(height));
-        // TODO: хардкод размеров окон для значений
-        sceneView_->setGeometry(widthI - 300, 0, 300, 500);
-        inspector_->setGeometry(widthI - 450, heightI - 400, 450, 400);
     }
 
     void SSAOView::updateKernels(int count) {
@@ -281,4 +282,17 @@ namespace SSAOImpl {
         }
     }
 
+    void SSAOView::onResize(size_t width, size_t height) {
+        const int widthI = static_cast<int>(width);
+        const int heightI = static_cast<int>(height);
+
+        // Configure viewport
+        glViewport(0, 0, widthI, heightI);
+        gBuffer_.resize(width, height, 0);
+
+        cameraView_.getCamera().setAspect(static_cast<float>(width) / static_cast<float>(height));
+        // TODO: хардкод размеров окон для значений
+        sceneView_->setGeometry(widthI - 300, 0, 300, 500);
+        inspector_->setGeometry(widthI - 450, heightI - 400, 450, 400);
+    }
 } // SSAOImpl

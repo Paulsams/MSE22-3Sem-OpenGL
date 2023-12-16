@@ -6,7 +6,8 @@ namespace SSAOImpl {
 
     void GBuffer::resize(const size_t width, const size_t height, int countSamples) {
         QOpenGLFramebufferObjectFormat format;
-        format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+//        format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+        format.setAttachment(QOpenGLFramebufferObject::NoAttachment);
         format.setInternalTextureFormat(GL_RGBA32F);
 //    format.setSamples(countSamples);
 
@@ -14,11 +15,24 @@ namespace SSAOImpl {
         int heightI = static_cast<int>(height);
 
         fbo_ = std::make_unique<QOpenGLFramebufferObject>(widthI, heightI, format);
-        for (int i = 1; i < GBUFFER_TEXTURE_TYPE_SSAO; ++i)
+        for (int i = 1; i <= GBUFFER_TEXTURE_TYPE_SSAO; ++i)
             fbo_->addColorAttachment(widthI, heightI, GL_RGBA32F);
-        fbo_->addColorAttachment(widthI, heightI, GL_RGB);
-        fbo_->addColorAttachment(widthI, heightI, GL_RGB);
-        fbo_->addColorAttachment(widthI, heightI, GL_RGB);
+        for (int i = GBUFFER_TEXTURE_TYPE_SSAO + 1; i <= GBUFFER_NUM_TEXTURES; ++i)
+            fbo_->addColorAttachment(widthI, heightI, GL_RGB);
+
+        fbo_->bind();
+
+        funcs_.glGenTextures(1, &depthAttachment_);
+        funcs_.glBindTexture(GL_TEXTURE_2D, depthAttachment_);
+        funcs_.glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, widthI, heightI, 0, GL_DEPTH_STENCIL,
+                            GL_UNSIGNED_INT_24_8, nullptr);
+        funcs_.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        funcs_.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        funcs_.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthAttachment_, 0);
+
+//        funcs_.glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+//                                                     GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, &depthAttachment_);
+        fbo_->release();
 
         auto textures = fbo_->textures();
         for (int i = 0; i < GBUFFER_NUM_TEXTURES; ++i) {
@@ -43,7 +57,6 @@ namespace SSAOImpl {
         GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0,
                                  GL_COLOR_ATTACHMENT1,
                                  GL_COLOR_ATTACHMENT2,
-                                 GL_COLOR_ATTACHMENT3
         };
 
         funcs_.glDrawBuffers(sizeof(drawBuffers) / sizeof(GLenum), drawBuffers);
@@ -55,8 +68,6 @@ namespace SSAOImpl {
         GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 + GBUFFER_TEXTURE_TYPE_SSAO };
         funcs_.glDrawBuffers(1, drawBuffers);
         funcs_.glClear(GL_COLOR_BUFFER_BIT);
-
-        bindTexture(GBUFFER_TEXTURE_TYPE_POSITION_VIEW_SPACE);
     }
 
     void GBuffer::bindForBlurPass() {
