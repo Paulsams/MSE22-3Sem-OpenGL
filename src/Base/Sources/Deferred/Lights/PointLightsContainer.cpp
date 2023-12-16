@@ -27,7 +27,7 @@ namespace Deferred {
             light->executeStencilPass(view, viewProjection);
 
             gBuffer.bindForLightPass();
-            light->executeLightPass(view, viewProjection, viewPosition, gBuffer, sizeWindow);
+            light->executeLightPass(view, viewProjection, viewPosition, sizeWindow);
         }
     }
 }

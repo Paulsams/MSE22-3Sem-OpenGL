@@ -268,7 +268,7 @@ namespace SSAOImpl {
         kernelPoints_.reserve(count);
         kernelPointsCount_ = count / 2;
 
-        for (uint i = 0 ; i < count; i++ ) {
+        for (int i = 0 ; i < count; ++i) {
             float scale = (float)i / (float)(count);
             QVector3D vec;
             vec.setX(2.0f * (float)rand() / RAND_MAX - 1.0f);

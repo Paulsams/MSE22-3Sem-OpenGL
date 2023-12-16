@@ -87,7 +87,6 @@ namespace Deferred {
     void PointLight::executeLightPass(const QMatrix4x4& view,
                                       const QMatrix4x4 &viewProjection,
                                       const QVector3D &viewPosition,
-                                      IGBuffer& gBuffer,
                                       QSize sizeWindow) {
         lightPassProgram_->link();
         lightPassProgram_->bind();

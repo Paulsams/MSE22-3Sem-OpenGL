@@ -4,7 +4,7 @@ namespace SSAOImpl {
     GBuffer::GBuffer(QOpenGLExtraFunctions& funcs)
             : funcs_(funcs) { }
 
-    void GBuffer::resize(const size_t width, const size_t height, int countSamples) {
+    void GBuffer::resize(const size_t width, const size_t height, int) {
         QOpenGLFramebufferObjectFormat format;
 //        format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
         format.setAttachment(QOpenGLFramebufferObject::NoAttachment);

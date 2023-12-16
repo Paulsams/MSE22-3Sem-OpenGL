@@ -54,8 +54,8 @@ namespace Deferred {
         // TODO: сделать френдами или через интерфейс спрятать эти методы
         void executeStencilPass(const QMatrix4x4& view, const QMatrix4x4 &viewProjection);
 
-        void executeLightPass(const QMatrix4x4& view, const QMatrix4x4 &viewProjection, const QVector3D &viewPosition,
-                              IGBuffer& gBuffer, QSize sizeWindow);
+        void executeLightPass(const QMatrix4x4& view, const QMatrix4x4 &viewProjection,
+                              const QVector3D &viewPosition,QSize sizeWindow);
 
         static constexpr const char *defaultNameInHierarchy = "Point";
 
