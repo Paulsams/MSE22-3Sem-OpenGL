@@ -178,6 +178,7 @@ namespace SSAOImpl {
     void SSAOView::geometryPass(const QMatrix4x4& viewProjection, const QVector3D& viewPosition) {
         gBuffer_.bindForGeomPass();
 
+        // TODO: проверить, что в какой модели нормали вывернуты
         glCullFace(GL_FRONT);
         // Only the geometry pass updates the depth buffer
         glDepthMask(GL_TRUE);
