@@ -1,7 +1,7 @@
 #pragma once
 
 #include "utils.h"
-#include "4-Raytracing/Include/hittables/hittable.h"
+#include "4-Raytracing/Include/Hittables/hittable.h"
 
 class material {
 public:
