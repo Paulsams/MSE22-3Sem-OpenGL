@@ -14,7 +14,7 @@ Help students with their submission is the main goal of this repository. Do not 
 - git [https://git-scm.com](https://git-scm.com);
 - C++17 compatible compiler;
 - CMake 3.10+ [https://cmake.org/](https://cmake.org/);
-- Qt 5 [https://www.qt.io/](https://www.qt.io/);
+- Qt 5 [https://www.qt.io/](https://www.qt.io/) (I used 5.15.2);
 - (Optionally) Your favourite IDE;
 - (Optionally) Ninja build [https://ninja-build.org/](https://ninja-build.org/).
 
